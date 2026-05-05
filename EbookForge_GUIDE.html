@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide de Déploiement — EbookForge AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080F;--s1:#0D0F1C;--s2:#12152A;--bd:#1F2540;
+  --a1:#7B68EE;--a2:#FF6B9D;--a3:#00D9AA;--a4:#FFB347;
+  --text:#F0F2FF;--mid:#8B9AC0;--dim:#4A5580;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 60px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 900px 700px at 20% 20%,rgba(123,104,238,.06),transparent 60%);pointer-events:none;}
+
+/* HERO */
+.hero{
+  text-align:center;padding:60px 24px 50px;
+  background:linear-gradient(180deg,rgba(123,104,238,.08) 0%,transparent 100%);
+  border-bottom:1px solid var(--bd);
+}
+.hero-logo{
+  width:80px;height:80px;border-radius:20px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:38px;margin:0 auto 20px;
+  box-shadow:0 0 50px rgba(123,104,238,.4);
+}
+.hero-title{
+  font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,42px);
+  font-weight:900;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:10px;
+}
+.hero-sub{font-size:15px;color:var(--mid);max-width:560px;margin:0 auto 24px;line-height:1.6;}
+.hero-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.hbadge{
+  padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  border:1px solid;
+}
+
+/* CONTAINER */
+.container{max-width:900px;margin:0 auto;padding:0 20px;}
+
+/* SECTION */
+.section{padding:40px 0 0;}
+.sec-title{
+  font-family:'Playfair Display',serif;font-size:24px;font-weight:700;
+  margin-bottom:6px;display:flex;align-items:center;gap:10px;
+}
+.sec-sub{font-size:13.5px;color:var(--mid);margin-bottom:24px;line-height:1.5;}
+
+/* STEP CARDS */
+.steps{display:flex;flex-direction:column;gap:16px;}
+.step{
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:16px;padding:22px;display:flex;gap:18px;
+}
+.step-num{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;color:#fff;
+}
+.step-body{flex:1;}
+.step-title{font-size:16px;font-weight:800;margin-bottom:6px;}
+.step-desc{font-size:13.5px;color:var(--mid);line-height:1.7;margin-bottom:10px;}
+.step-desc strong{color:var(--text);font-weight:700;}
+.code-box{
+  background:var(--s2);border:1px solid var(--bd);border-radius:10px;
+  padding:13px 16px;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;color:var(--a3);margin:8px 0;
+  position:relative;overflow-x:auto;white-space:pre-wrap;word-break:break-all;
+}
+.copy-btn{
+  position:absolute;top:8px;right:10px;
+  padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;
+  background:rgba(123,104,238,.2);color:var(--a1);border:none;cursor:pointer;
+  transition:all .2s;
+}
+.copy-btn:hover{background:rgba(123,104,238,.4);}
+.tip{
+  padding:11px 14px;border-left:3px solid var(--a3);
+  background:rgba(0,217,170,.06);border-radius:0 8px 8px 0;
+  font-size:13px;color:var(--a3);margin:10px 0;font-style:italic;
+}
+.warn{
+  padding:11px 14px;border-left:3px solid var(--a4);
+  background:rgba(255,179,71,.06);border-radius:0 8px 8px 0;
+  font-size:13px;color:var(--a4);margin:10px 0;
+}
+.step-img{
+  width:100%;border-radius:10px;margin:10px 0;
+  background:var(--s2);border:1px solid var(--bd);
+  padding:16px;text-align:center;font-size:13px;color:var(--dim);
+}
+
+/* COST TABLE */
+.cost-table{
+  width:100%;border-collapse:collapse;font-size:13.5px;
+  background:var(--s1);border-radius:12px;overflow:hidden;
+}
+.cost-table th{
+  background:var(--s2);padding:11px 16px;text-align:left;
+  font-size:11px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--mid);
+}
+.cost-table td{
+  padding:11px 16px;border-top:1px solid var(--bd);
+  color:var(--text);
+}
+.cost-table tr:hover td{background:rgba(123,104,238,.04);}
+
+/* CARDS GRID */
+.cards-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.cards-2{grid-template-columns:1fr;}}
+.info-card{
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:14px;padding:18px;
+}
+.ic-title{font-size:15px;font-weight:800;margin-bottom:8px;}
+.ic-list{list-style:none;padding:0;}
+.ic-list li{
+  padding:7px 0 7px 20px;position:relative;
+  font-size:13px;color:var(--mid);
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.ic-list li:last-child{border-bottom:none;}
+.ic-list li::before{content:'›';position:absolute;left:0;color:var(--a1);font-weight:900;}
+
+/* BIG CTA */
+.cta-box{
+  text-align:center;padding:40px 24px;
+  background:linear-gradient(135deg,rgba(123,104,238,.1),rgba(255,107,157,.06));
+  border:1px solid rgba(123,104,238,.25);border-radius:20px;
+  margin-top:40px;
+}
+.cta-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:8px;}
+.cta-sub{font-size:14px;color:var(--mid);margin-bottom:22px;line-height:1.5;}
+.cta-btn{
+  display:inline-block;padding:14px 36px;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  border-radius:12px;font-size:15px;font-weight:800;color:#fff;
+  text-decoration:none;cursor:pointer;border:none;
+  box-shadow:0 6px 24px rgba(123,104,238,.4);transition:all .2s;
+}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(123,104,238,.5);}
+
+/* PROGRESS INDICATOR */
+.progress-bar{
+  display:flex;align-items:center;gap:0;
+  margin-bottom:32px;overflow-x:auto;padding:4px 0;
+}
+.pb-step{
+  display:flex;align-items:center;gap:0;flex-shrink:0;
+}
+.pb-circle{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--s2);border:2px solid var(--bd);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:var(--dim);transition:all .2s;
+  cursor:pointer;flex-shrink:0;
+}
+.pb-step.done .pb-circle{background:var(--a1);border-color:var(--a1);color:#fff;}
+.pb-line{width:50px;height:2px;background:var(--bd);flex-shrink:0;}
+.pb-step.done .pb-line{background:var(--a1);}
+.pb-label{font-size:10px;color:var(--dim);text-align:center;margin-top:4px;width:70px;}
+
+/* CONTACT */
+.contact-card{
+  background:var(--s1);border:1px solid var(--bd);border-radius:16px;
+  padding:22px;display:flex;gap:16px;align-items:flex-start;
+  margin-top:32px;
+}
+.contact-avatar{
+  width:56px;height:56px;border-radius:14px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+}
+.contact-name{font-size:17px;font-weight:800;margin-bottom:4px;}
+.contact-info{font-size:13px;color:var(--mid);line-height:1.8;}
+.contact-info a{color:var(--a3);text-decoration:none;}
+
+::-webkit-scrollbar{height:4px;width:4px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-logo">📚</div>
+  <div class="hero-title">Guide de Déploiement<br>EbookForge AI</div>
+  <div class="hero-sub">
+    Suivez ce guide étape par étape pour déployer votre agent IA sur GitHub Pages et
+    obtenir un <strong style="color:var(--a3)">lien permanent gratuit</strong>.
+  </div>
+  <div class="hero-badges">
+    <span class="hbadge" style="color:var(--a3);border-color:rgba(0,217,170,.3)">✅ Déploiement Gratuit</span>
+    <span class="hbadge" style="color:var(--a1);border-color:rgba(123,104,238,.3)">⚡ 15 minutes maximum</span>
+    <span class="hbadge" style="color:var(--a4);border-color:rgba(255,179,71,.3)">📱 Accessible partout</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════
+       PARTIE 1 — OBTENIR CLÉ API
+  ═══════════════════════════════ -->
+  <div class="section">
+    <div class="sec-title">🔑 PARTIE 1 — Obtenir votre Clé API Anthropic</div>
+    <div class="sec-sub">La clé API est le "moteur" de l'agent IA. Sans elle, l'agent ne peut pas générer d'ebooks. C'est gratuit pour commencer.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Créer un compte Anthropic</div>
+          <div class="step-desc">
+            Ouvrez votre navigateur et allez sur :
+          </div>
+          <div class="code-box">https://console.anthropic.com
+<button class="copy-btn" onclick="copy(this,'https://console.anthropic.com')">Copier</button></div>
+          <div class="step-desc">
+            Cliquez sur <strong>"Sign Up"</strong> → Entrez votre email → Créez un mot de passe → Vérifiez votre email.
+          </div>
+          <div class="tip">✅ Anthropic offre <strong>$5 de crédit gratuit</strong> à l'inscription = environ 30 à 50 ebooks longs !</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Créer votre clé API</div>
+          <div class="step-desc">
+            Une fois connecté à console.anthropic.com :
+            <br>→ Cliquez sur <strong>"API Keys"</strong> dans le menu gauche
+            <br>→ Cliquez sur le bouton <strong>"Create Key"</strong>
+            <br>→ Donnez un nom à la clé : <strong>EbookForge</strong>
+            <br>→ Cliquez sur <strong>"Create Key"</strong>
+          </div>
+          <div class="warn">⚠️ <strong>Copiez immédiatement votre clé !</strong> Elle ne sera affichée qu'une seule fois. Elle ressemble à :</div>
+          <div class="code-box">sk-ant-api03-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</div>
+          <div class="step-desc">Sauvegardez cette clé dans un fichier texte sur votre ordinateur.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Intégrer la clé dans l'agent</div>
+          <div class="step-desc">
+            Ouvrez le fichier <strong>index.html</strong> avec <strong>Notepad</strong> (clic droit → Ouvrir avec → Notepad).
+            <br><br>Utilisez <strong>Ctrl+H</strong> (Rechercher/Remplacer) et remplacez :
+          </div>
+          <div class="code-box">VOTRE_CLE_API_ICI</div>
+          <div class="step-desc">Par votre vraie clé (ex :)</div>
+          <div class="code-box">sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+          <div class="step-desc">Sauvegardez le fichier (Ctrl+S).</div>
+          <div class="tip">💡 Vous pouvez aussi entrer la clé directement dans l'interface de l'agent (⚙️ Configuration) sans modifier le fichier.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       PARTIE 2 — DÉPLOYER GITHUB
+  ═══════════════════════════════ -->
+  <div class="section">
+    <div class="sec-title">🚀 PARTIE 2 — Déployer sur GitHub Pages</div>
+    <div class="sec-sub">GitHub Pages est un hébergement gratuit et permanent. Votre agent sera accessible 24h/24 depuis n'importe où dans le monde.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Créer un compte GitHub</div>
+          <div class="step-desc">
+            Allez sur :
+          </div>
+          <div class="code-box">https://github.com
+<button class="copy-btn" onclick="copy(this,'https://github.com')">Copier</button></div>
+          <div class="step-desc">
+            Cliquez sur <strong>"Sign up"</strong> → Entrez votre email → Choisissez un mot de passe → Choisissez un nom d'utilisateur (ex: <strong>jeanpaul-bognon</strong>) → Vérifiez votre email.
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">Créer un nouveau dépôt (Repository)</div>
+          <div class="step-desc">
+            Une fois connecté sur GitHub :
+            <br>→ Cliquez sur le <strong>"+"</strong> en haut à droite
+            <br>→ Choisissez <strong>"New repository"</strong>
+            <br>→ Dans <strong>"Repository name"</strong>, tapez :
+          </div>
+          <div class="code-box">ebookforge-ai
+<button class="copy-btn" onclick="copy(this,'ebookforge-ai')">Copier</button></div>
+          <div class="step-desc">
+            → Sélectionnez <strong>"Public"</strong> ✅ (obligatoire pour GitHub Pages gratuit)
+            <br>→ Cochez <strong>"Add a README file"</strong>
+            <br>→ Cliquez <strong>"Create repository"</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">Uploader les fichiers</div>
+          <div class="step-desc">
+            Dans votre dépôt GitHub :
+            <br>→ Cliquez sur <strong>"uploading an existing file"</strong> (ou "Add file" → "Upload files")
+            <br>→ Faites glisser ces 2 fichiers dans la zone :
+          </div>
+          <div class="code-box">📄 index.html   ← L'agent IA principal
+📄 README.md    ← La documentation</div>
+          <div class="step-desc">
+            → Descendez en bas de la page
+            <br>→ Sous "Commit changes", cliquez sur le bouton vert <strong>"Commit changes"</strong>
+          </div>
+          <div class="tip">💡 Si GitHub vous demande de renommer un fichier, assurez-vous que le fichier principal s'appelle exactement <strong>index.html</strong></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <div class="step-title">Activer GitHub Pages</div>
+          <div class="step-desc">
+            Dans votre dépôt :
+            <br>→ Cliquez sur <strong>"Settings"</strong> (icône engrenage en haut)
+            <br>→ Dans le menu gauche, faites défiler jusqu'à <strong>"Pages"</strong>
+            <br>→ Sous "Source" / "Branch", sélectionnez <strong>"main"</strong>
+            <br>→ Laissez le dossier sur <strong>"/ (root)"</strong>
+            <br>→ Cliquez <strong>"Save"</strong>
+          </div>
+          <div class="tip">⏳ Attendez 2-5 minutes. GitHub va construire votre site.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num" style="background:linear-gradient(135deg,var(--a3),#059669)">✓</div>
+        <div class="step-body">
+          <div class="step-title" style="color:var(--a3)">🎉 Votre agent est en ligne !</div>
+          <div class="step-desc">
+            Votre agent EbookForge AI est maintenant accessible à l'adresse permanente :
+          </div>
+          <div class="code-box" style="color:var(--a3);font-size:14px">https://VOTRE-NOM-GITHUB.github.io/ebookforge-ai</div>
+          <div class="step-desc">
+            <strong>Exemple :</strong> Si votre nom GitHub est <strong>jeanpaul-bognon</strong>, l'adresse sera :
+          </div>
+          <div class="code-box">https://jeanpaul-bognon.github.io/ebookforge-ai</div>
+          <div class="tip">✅ Partagez ce lien avec vos clients, sur WhatsApp, Facebook, Instagram pour qu'ils génèrent leurs ebooks !</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       PARTIE 3 — COÛTS
+  ═══════════════════════════════ -->
+  <div class="section">
+    <div class="sec-title">💰 PARTIE 3 — Comprendre les Coûts</div>
+    <div class="sec-sub">Coût de génération par ebook avec l'API Anthropic Claude Sonnet.</div>
+
+    <div style="overflow-x:auto;border-radius:14px;border:1px solid var(--bd)">
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th>Type d'ebook</th>
+            <th>Longueur</th>
+            <th>Coût API</th>
+            <th>Prix de vente suggéré</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>⚡ Court</td>
+            <td>~6 000 mots</td>
+            <td style="color:var(--a3)">~$0.02</td>
+            <td>5 000 FCFA (~$8)</td>
+            <td style="color:var(--a3);font-weight:700">99.7%</td>
+          </tr>
+          <tr>
+            <td>📖 Moyen</td>
+            <td>~12 000 mots</td>
+            <td style="color:var(--a3)">~$0.05</td>
+            <td>10 000 FCFA (~$16)</td>
+            <td style="color:var(--a3);font-weight:700">99.7%</td>
+          </tr>
+          <tr>
+            <td>📚 Long ★</td>
+            <td>~25 000 mots</td>
+            <td style="color:var(--a3)">~$0.10</td>
+            <td>15 000 FCFA (~$24)</td>
+            <td style="color:var(--a3);font-weight:700">99.6%</td>
+          </tr>
+          <tr>
+            <td>📜 Complet</td>
+            <td>~40 000 mots</td>
+            <td style="color:var(--a3)">~$0.16</td>
+            <td>25 000 FCFA (~$40)</td>
+            <td style="color:var(--a3);font-weight:700">99.6%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip" style="margin-top:14px">
+      💡 <strong>Avec $5 de crédit Anthropic</strong> (offert à l'inscription), vous pouvez générer entre <strong>30 et 250 ebooks</strong> selon la longueur — soit un retour sur investissement de <strong>5 000% minimum</strong> si vous vendez chacun à 5 000 FCFA.
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="font-size:14.5px;font-weight:800;margin-bottom:12px;color:var(--a4)">📲 Comment recharger votre compte Anthropic</div>
+      <div class="cards-2">
+        <div class="info-card">
+          <div class="ic-title">Via le site Anthropic</div>
+          <ul class="ic-list">
+            <li>Allez sur console.anthropic.com</li>
+            <li>Cliquez sur "Billing" dans le menu</li>
+            <li>Ajoutez votre carte Visa/Mastercard</li>
+            <li>Rechargez (minimum $5)</li>
+            <li>Le crédit est disponible immédiatement</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <div class="ic-title">Cartes acceptées</div>
+          <ul class="ic-list">
+            <li>💳 Visa internationale</li>
+            <li>💳 Mastercard internationale</li>
+            <li>💳 Carte virtuelle (Revolut, Wise)</li>
+            <li>💳 Carte prépayée internationale</li>
+            <li>🏦 Ou demandez à un proche à l'étranger</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       PARTIE 4 — VENDRE SES EBOOKS
+  ═══════════════════════════════ -->
+  <div class="section">
+    <div class="sec-title">🛒 PARTIE 4 — Où et Comment Vendre vos Ebooks</div>
+    <div class="sec-sub">Une fois vos ebooks générés, voici les meilleures plateformes pour les vendre.</div>
+
+    <div class="cards-2">
+      <div class="info-card" style="border-color:rgba(0,217,170,.25)">
+        <div class="ic-title" style="color:var(--a3)">🌍 Plateformes Afrique</div>
+        <ul class="ic-list">
+          <li><strong>Selar.co</strong> — Nigeria, Bénin, Afrique (commission 10%)</li>
+          <li><strong>FedaPay</strong> — Bénin, Togo (MTN/Moov Money)</li>
+          <li><strong>WhatsApp + lien paiement</strong> — Vente directe</li>
+          <li><strong>Facebook Marketplace</strong> — Portée locale</li>
+          <li><strong>Mobile Money direct</strong> — MTN / Moov</li>
+        </ul>
+      </div>
+      <div class="info-card" style="border-color:rgba(123,104,238,.25)">
+        <div class="ic-title" style="color:var(--a1)">🌐 Plateformes Mondiales</div>
+        <ul class="ic-list">
+          <li><strong>Gumroad.com</strong> — Simple, mondial (commission 10%)</li>
+          <li><strong>Etsy Digital</strong> — Grande audience (commission 6.5%)</li>
+          <li><strong>Amazon KDP</strong> — Kindle Direct Publishing</li>
+          <li><strong>Payhip.com</strong> — Simple, faible commission (5%)</li>
+          <li><strong>Stan.store</strong> — Créateurs de contenu (abonnement)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:18px;">
+      <div style="font-size:14.5px;font-weight:800;margin-bottom:12px;color:var(--a4)">🎯 Stratégie de vente recommandée pour le Bénin</div>
+      <div style="font-size:13.5px;color:var(--mid);line-height:1.8;">
+        <strong style="color:var(--text)">1.</strong> Générez 5 à 10 ebooks dans des niches populaires (Finance, Entrepreneuriat, Spiritualité)<br>
+        <strong style="color:var(--text)">2.</strong> Créez un compte Selar.co et publiez vos ebooks (prix : 3 000 – 15 000 FCFA)<br>
+        <strong style="color:var(--text)">3.</strong> Faites la promotion sur WhatsApp, Facebook, Instagram avec un extrait gratuit<br>
+        <strong style="color:var(--text)">4.</strong> Utilisez FedaPay pour accepter MTN/Moov Money directement<br>
+        <strong style="color:var(--text)">5.</strong> Réinvestissez dans plus de générations d'ebooks et d'audiences
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       CTA FINAL
+  ═══════════════════════════════ -->
+  <div class="cta-box">
+    <div class="cta-title">🚀 Prêt à Commencer ?</div>
+    <div class="cta-sub">
+      Vous avez tout ce qu'il faut pour déployer votre agent EbookForge AI.<br>
+      Commencez par obtenir votre clé API Anthropic — c'est gratuit !
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="cta-btn" href="https://console.anthropic.com" target="_blank">
+        🔑 Obtenir ma Clé API (Gratuit)
+      </a>
+      <a class="cta-btn" href="https://github.com" target="_blank"
+         style="background:linear-gradient(135deg,var(--a3),#059669)">
+        🐙 Déployer sur GitHub
+      </a>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-card">
+    <div class="contact-avatar">👨‍💻</div>
+    <div>
+      <div class="contact-name">Jean Paul BOGNON</div>
+      <div class="contact-info">
+        Formateur en Informatique & Développement Numérique<br>
+        Centre Divine Privilege — Azovè, Couffo, Bénin<br>
+        📞 01 91 66 77 27 &nbsp;|&nbsp; 01 48 50 06 13<br>
+        ✉️ <a href="mailto:jeanpaulbognon3@gmail.com">jeanpaulbognon3@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:32px 0;font-size:12px;color:var(--dim)">
+    EbookForge AI v2.0 — Guide de Déploiement — Centre Divine Privilege, Azovè, Bénin
+  </div>
+
+</div><!-- /container -->
+
+<script>
+function copy(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copié !';
+    btn.style.background = 'rgba(0,217,170,.2)';
+    btn.style.color = '#00D9AA';
+    setTimeout(() => {
+      btn.textContent = 'Copier';
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>

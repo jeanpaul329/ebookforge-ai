@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EbookForge AI — Générateur d'Ebooks Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- ════════════════════════════════════════════
+     ⚙️  CONFIGURATION — MODIFIEZ ICI
+     ════════════════════════════════════════════ -->
+<script>
+  // ╔══════════════════════════════════════════╗
+  // ║  ÉTAPE 1 : COLLEZ VOTRE CLÉ API ICI     ║
+  // ║  Obtenez-la sur console.anthropic.com   ║
+  // ╚══════════════════════════════════════════╝
+  const ANTHROPIC_API_KEY = "VOTRE_CLE_API_ICI";
+  // Exemple : "sk-ant-api03-xxxxxxxxxxxxxxxxxxxx"
+
+  // ╔══════════════════════════════════════════╗
+  // ║  ÉTAPE 2 : MOT DE PASSE D'ACCÈS         ║
+  // ║  Pour protéger votre agent              ║
+  // ╚══════════════════════════════════════════╝
+  const ACCESS_PASSWORD = "ebookforge2025";
+
+  // ╔══════════════════════════════════════════╗
+  // ║  ÉTAPE 3 : VOTRE NOM / MARQUE           ║
+  // ╚══════════════════════════════════════════╝
+  const APP_AUTHOR = "Jean Paul BOGNON";
+  const APP_CONTACT = "jeanpaulbognon3@gmail.com";
+</script>
+
+<style>
+/* ══════════════════════════════════════════
+   DESIGN SYSTEM
+══════════════════════════════════════════ */
+:root{
+  --bg:#07080F;
+  --s1:#0D0F1C;
+  --s2:#12152A;
+  --s3:#181C38;
+  --bd:#1F2540;
+  --a1:#7B68EE;   /* primary violet */
+  --a2:#FF6B9D;   /* pink accent */
+  --a3:#00D9AA;   /* teal accent */
+  --a4:#FFB347;   /* amber */
+  --text:#F0F2FF;
+  --mid:#8B9AC0;
+  --dim:#4A5580;
+  --r:14px;
+  --glow:0 0 30px rgba(123,104,238,.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 900px 700px at 15% 20%,rgba(123,104,238,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 700px 600px at 85% 80%,rgba(255,107,157,.04) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── LOCK SCREEN ── */
+#lockScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(160deg,#07080F,#0D0F1C 50%,#07080F);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;padding:24px;
+}
+.lock-logo{
+  width:90px;height:90px;border-radius:24px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:42px;margin-bottom:24px;
+  box-shadow:0 0 60px rgba(123,104,238,.5),0 0 120px rgba(123,104,238,.2);
+  animation:logoPop 1s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes logoPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.lock-title{
+  font-family:'Playfair Display',serif;
+  font-size:30px;font-weight:900;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:6px;text-align:center;
+}
+.lock-sub{font-size:13px;color:var(--mid);margin-bottom:32px;text-align:center;}
+.lock-box{
+  width:100%;max-width:360px;
+  background:var(--s1);border:1.5px solid var(--bd);
+  border-radius:var(--r);padding:24px;
+}
+.lock-label{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:block;}
+.lock-input{
+  width:100%;background:var(--s2);border:1.5px solid var(--bd);
+  border-radius:10px;padding:13px 16px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);
+  outline:none;transition:border-color .2s;margin-bottom:14px;
+}
+.lock-input:focus{border-color:var(--a1);}
+.lock-btn{
+  width:100%;padding:14px;border-radius:10px;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;
+  color:#fff;border:none;cursor:pointer;
+  box-shadow:0 6px 24px rgba(123,104,238,.4);
+  transition:all .2s;
+}
+.lock-btn:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(123,104,238,.5);}
+.lock-err{
+  color:var(--a2);font-size:12.5px;font-weight:700;
+  text-align:center;margin-top:10px;display:none;
+}
+.lock-setup-btn{
+  margin-top:14px;font-size:12px;color:var(--a1);
+  background:none;border:none;cursor:pointer;font-weight:700;
+  width:100%;text-align:center;
+}
+
+/* ── SETUP GUIDE OVERLAY ── */
+#setupGuide{
+  position:fixed;inset:0;z-index:8000;
+  background:rgba(7,8,15,.95);
+  display:none;align-items:flex-start;justify-content:center;
+  overflow-y:auto;padding:24px;
+}
+#setupGuide.show{display:flex;}
+.guide-card{
+  width:100%;max-width:640px;
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:20px;overflow:hidden;
+  margin:auto;
+}
+.guide-header{
+  padding:28px;
+  background:linear-gradient(135deg,var(--s2),var(--s3));
+  border-bottom:1px solid var(--bd);text-align:center;
+}
+.guide-header h2{
+  font-family:'Playfair Display',serif;
+  font-size:24px;font-weight:700;margin-bottom:6px;
+}
+.guide-header p{font-size:13.5px;color:var(--mid);}
+.guide-body{padding:24px;}
+.guide-step{
+  display:flex;gap:16px;margin-bottom:24px;
+  padding:18px;border-radius:12px;
+  border:1px solid var(--bd);background:var(--s2);
+}
+.gstep-num{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;color:#fff;
+}
+.gstep-title{font-size:14px;font-weight:800;margin-bottom:5px;}
+.gstep-desc{font-size:13px;color:var(--mid);line-height:1.7;}
+.gstep-code{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;color:var(--a3);
+  background:var(--s3);padding:10px 14px;
+  border-radius:8px;margin-top:8px;border:1px solid var(--bd);
+  word-break:break-all;
+}
+.guide-close{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  border-radius:10px;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:800;color:#fff;border:none;cursor:pointer;
+  margin-top:8px;
+}
+
+/* ── HEADER ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:14px;
+  padding:14px 24px;
+  background:rgba(7,8,15,.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bd);
+}
+.hlogo{
+  width:40px;height:40px;border-radius:11px;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 20px rgba(123,104,238,.35);
+  animation:pulse 3s ease infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 20px rgba(123,104,238,.3)}
+  50%{box-shadow:0 0 40px rgba(123,104,238,.6),0 0 60px rgba(255,107,157,.2)}
+}
+.htitle{
+  font-family:'Playfair Display',serif;font-size:20px;font-weight:900;
+  background:linear-gradient(135deg,var(--a1),var(--a2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hsub{font-size:10.5px;color:var(--dim);font-weight:500;letter-spacing:.8px;text-transform:uppercase;margin-top:1px;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.api-status{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;
+}
+.api-ok{background:rgba(0,217,170,.12);color:var(--a3);border:1px solid rgba(0,217,170,.25);}
+.api-no{background:rgba(255,107,157,.1);color:var(--a2);border:1px solid rgba(255,107,157,.25);}
+.dot-live{width:6px;height:6px;border-radius:50%;background:var(--a3);animation:blink 1.4s ease infinite;}
+.dot-off{width:6px;height:6px;border-radius:50%;background:var(--a2);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── LAYOUT ── */
+.wrap{
+  position:relative;z-index:5;
+  display:grid;grid-template-columns:260px 1fr;
+  min-height:calc(100vh - 70px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  border-right:1px solid var(--bd);padding:18px 12px;
+  background:rgba(13,15,28,.8);overflow-y:auto;
+  display:flex;flex-direction:column;gap:4px;
+}
+.sb-sec{
+  font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim);padding:12px 8px 5px;
+}
+.nb{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 11px;border-radius:9px;cursor:pointer;
+  transition:all .2s;font-size:13px;font-weight:600;
+  color:var(--mid);border:1px solid transparent;
+  position:relative;
+}
+.nb:hover{background:rgba(123,104,238,.07);color:var(--text);border-color:rgba(123,104,238,.15);}
+.nb.on{background:rgba(123,104,238,.12);color:var(--a1);border-color:rgba(123,104,238,.3);}
+.nb.on::before{
+  content:'';position:absolute;left:0;top:22%;
+  height:56%;width:2px;background:var(--a1);border-radius:2px;
+  box-shadow:0 0 8px var(--a1);
+}
+.nbico{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.nbbadge{
+  margin-left:auto;font-size:9.5px;font-weight:800;
+  padding:2px 7px;border-radius:10px;
+}
+.hot{background:rgba(255,107,157,.15);color:var(--a2);}
+.new{background:rgba(0,217,170,.12);color:var(--a3);}
+.cnt{background:rgba(123,104,238,.18);color:var(--a1);}
+
+/* ── CONTENT ── */
+.content{padding:26px;overflow-y:auto;max-height:calc(100vh - 70px);}
+
+/* ── PANELS ── */
+.panel{display:none;}
+.panel.on{display:block;animation:fup .3s ease;}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── SECTION HEADER ── */
+.sh{margin-bottom:22px;}
+.sh h2{
+  font-family:'Playfair Display',serif;font-size:26px;font-weight:700;
+  letter-spacing:-.5px;margin-bottom:5px;
+}
+.sh p{font-size:13.5px;color:var(--mid);line-height:1.6;}
+
+/* ── CARD ── */
+.card{
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:var(--r);padding:22px;margin-bottom:18px;
+}
+.ct{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.cs{font-size:12px;color:var(--mid);margin-bottom:16px;}
+
+/* ── NICHE GRID ── */
+.ng{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;margin-bottom:18px;
+}
+.nc{
+  background:var(--s2);border:1.5px solid var(--bd);
+  border-radius:11px;padding:14px 11px;text-align:center;
+  cursor:pointer;transition:all .22s;
+  position:relative;overflow:hidden;
+}
+.nc::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(123,104,238,.1),transparent 70%);
+  opacity:0;transition:opacity .22s;
+}
+.nc:hover::after,.nc.sel::after{opacity:1;}
+.nc:hover{border-color:rgba(123,104,238,.4);transform:translateY(-2px);}
+.nc.sel{border-color:var(--a1);background:rgba(123,104,238,.08);box-shadow:0 0 24px rgba(123,104,238,.18);}
+.nce{font-size:26px;margin-bottom:7px;}
+.ncn{font-size:12px;font-weight:700;}
+.ncs{font-size:10px;color:var(--mid);margin-top:3px;}
+.nhot{
+  position:absolute;top:5px;right:5px;
+  font-size:8px;font-weight:800;padding:2px 5px;
+  border-radius:6px;background:rgba(255,107,157,.18);color:var(--a2);
+}
+
+/* ── FORM ── */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+.fr.full{grid-template-columns:1fr;}
+.fi{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;}
+input:not([type=range]),select,textarea{
+  background:var(--s2);border:1.5px solid var(--bd);
+  border-radius:9px;padding:10px 13px;
+  font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);
+  outline:none;transition:all .2s;width:100%;
+}
+input:not([type=range]):focus,select:focus,textarea:focus{
+  border-color:var(--a1);box-shadow:0 0 0 3px rgba(123,104,238,.1);
+}
+textarea{resize:vertical;min-height:80px;}
+select{cursor:pointer;}
+::placeholder{color:var(--dim);}
+
+/* LENGTH SELECTOR */
+.len-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.len-opt{
+  padding:10px 6px;border-radius:9px;text-align:center;
+  background:var(--s2);border:1.5px solid var(--bd);
+  cursor:pointer;transition:all .2s;
+}
+.len-opt:hover{border-color:rgba(123,104,238,.4);}
+.len-opt.sel{border-color:var(--a1);background:rgba(123,104,238,.1);}
+.len-val{font-size:14px;font-weight:900;color:var(--a1);}
+.len-label{font-size:9.5px;color:var(--mid);font-weight:700;margin-top:2px;}
+
+/* TOGGLES */
+.trow{display:flex;flex-wrap:wrap;gap:7px;}
+.tp{
+  padding:6px 12px;border:1.5px solid var(--bd);
+  border-radius:20px;font-size:12px;font-weight:600;
+  color:var(--mid);cursor:pointer;transition:all .2s;background:var(--s2);
+}
+.tp:hover{border-color:var(--a1);color:var(--a1);}
+.tp.on{border-color:var(--a1);color:var(--a1);background:rgba(123,104,238,.08);}
+
+/* GEN BUTTON */
+.gbtn{
+  width:100%;padding:16px;margin-top:14px;
+  background:linear-gradient(135deg,var(--a1),#9B59B6);
+  border-radius:12px;font-family:'DM Sans',sans-serif;
+  font-size:15px;font-weight:900;color:#fff;border:none;cursor:pointer;
+  transition:all .25s;letter-spacing:.3px;
+  box-shadow:0 6px 28px rgba(123,104,238,.4);
+  position:relative;overflow:hidden;
+}
+.gbtn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.gbtn:hover::before{opacity:1;}
+.gbtn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(123,104,238,.5);}
+.gbtn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+/* ── PROGRESS ── */
+.prog-wrap{
+  border:1px solid var(--bd);border-radius:var(--r);
+  padding:24px;background:var(--s1);margin-top:18px;
+  animation:fup .3s ease;
+}
+.prog-title{
+  font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:14px;
+}
+.pbar-outer{height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:20px;}
+.pbar-inner{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--a1),var(--a2));
+  transition:width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.psteps{display:flex;flex-direction:column;gap:10px;}
+.pstep{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:9px;
+  border:1px solid var(--bd);background:var(--s2);transition:all .3s;
+}
+.pstep.run{border-color:var(--a1);background:rgba(123,104,238,.07);}
+.pstep.done{border-color:var(--a3);background:rgba(0,217,170,.05);}
+.pico{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;background:var(--s3);border:1.5px solid var(--bd);transition:all .3s;
+}
+.pstep.run .pico{background:rgba(123,104,238,.18);border-color:var(--a1);}
+.pstep.done .pico{background:rgba(0,217,170,.12);border-color:var(--a3);}
+.plbl{font-size:13px;font-weight:700;}
+.psub{font-size:11px;color:var(--mid);margin-top:1px;}
+.spin{
+  width:13px;height:13px;border:2px solid rgba(123,104,238,.2);
+  border-top-color:var(--a1);border-radius:50%;
+  animation:sp .7s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RESULT ── */
+.result-wrap{
+  border:1px solid var(--bd);border-radius:var(--r);
+  overflow:hidden;background:var(--s1);margin-top:18px;
+}
+.rtoolbar{
+  padding:13px 18px;background:var(--s2);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+}
+.rt-info{flex:1;min-width:0;}
+.rt-title{
+  font-family:'Playfair Display',serif;font-size:15px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rt-meta{font-size:11px;color:var(--mid);margin-top:2px;}
+.wbadge{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:3px 9px;border-radius:10px;
+  background:rgba(0,217,170,.1);color:var(--a3);border:1px solid rgba(0,217,170,.22);
+  white-space:nowrap;
+}
+.tbtn{
+  padding:7px 14px;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;transition:all .2s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.tp1{background:var(--a1);color:#fff;}
+.tp1:hover{box-shadow:0 4px 18px rgba(123,104,238,.45);transform:translateY(-1px);}
+.tp2{background:rgba(255,107,157,.12);border:1px solid rgba(255,107,157,.3);color:var(--a2);}
+.tp2:hover{background:rgba(255,107,157,.2);}
+.tp3{background:var(--s3);border:1px solid var(--bd);color:var(--text);}
+.tp3:hover{border-color:var(--a1);color:var(--a1);}
+
+/* EBOOK READER */
+.ebook-reader{
+  padding:28px 32px;max-height:600px;overflow-y:auto;
+  font-size:14px;line-height:1.85;color:#C8D0F0;
+}
+.ebook-reader::-webkit-scrollbar{width:4px;}
+.ebook-reader::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+
+.er-title{
+  font-family:'Playfair Display',serif;
+  font-size:30px;font-weight:900;color:var(--text);
+  line-height:1.15;margin-bottom:8px;
+  border-bottom:2px solid var(--a1);padding-bottom:14px;
+}
+.er-subtitle{font-size:15px;color:var(--mid);margin-bottom:24px;font-style:italic;}
+.er-meta{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;
+}
+.er-tag{
+  font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+  background:rgba(123,104,238,.12);color:var(--a1);border:1px solid rgba(123,104,238,.22);
+}
+.er-toc{
+  background:var(--s2);border:1px solid var(--bd);border-radius:12px;
+  padding:18px 20px;margin-bottom:24px;
+}
+.er-toc h3{font-size:13px;font-weight:800;color:var(--a1);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.er-toc ol{padding-left:18px;}
+.er-toc ol li{font-size:13px;color:var(--mid);margin-bottom:5px;cursor:pointer;}
+.er-toc ol li:hover{color:var(--a1);}
+.er-ch{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:700;color:var(--a1);
+  margin:28px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.er-chnum{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;color:var(--a1);
+}
+.er-h3{font-size:15.5px;font-weight:800;color:var(--text);margin:18px 0 8px;}
+.er-p{font-size:14px;line-height:1.85;color:#C8D0F0;margin-bottom:12px;}
+.er-ul{list-style:none;padding:0;margin-bottom:14px;}
+.er-ul li{
+  padding:8px 12px 8px 28px;position:relative;
+  border-radius:7px;background:rgba(255,255,255,.02);
+  border:1px solid transparent;font-size:13.5px;margin-bottom:5px;
+}
+.er-ul li::before{content:'▸';position:absolute;left:10px;color:var(--a3);font-size:10px;top:10px;}
+.er-ul li:hover{border-color:rgba(123,104,238,.15);background:rgba(123,104,238,.04);}
+.er-tip{
+  padding:14px 16px;
+  border-left:3px solid var(--a3);
+  background:rgba(0,217,170,.06);border-radius:0 9px 9px 0;
+  font-size:13px;color:var(--a3);margin:14px 0;
+  font-style:italic;
+}
+.er-warn{
+  padding:14px 16px;
+  border-left:3px solid var(--a4);
+  background:rgba(255,179,71,.06);border-radius:0 9px 9px 0;
+  font-size:13px;color:var(--a4);margin:14px 0;
+}
+.er-kp{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:12px 14px;
+  background:rgba(123,104,238,.07);border:1px solid rgba(123,104,238,.2);
+  border-radius:9px;margin-bottom:8px;
+}
+.er-kpico{font-size:18px;flex-shrink:0;margin-top:2px;}
+.er-kptxt{font-size:13px;color:var(--text);line-height:1.65;}
+.er-kptxt strong{color:var(--a1);}
+.er-divider{
+  height:2px;background:linear-gradient(90deg,var(--a1),var(--a2),transparent);
+  border-radius:2px;margin:22px 0;
+}
+.er-num-li{
+  display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;
+}
+.er-num{
+  width:24px;height:24px;border-radius:6px;flex-shrink:0;
+  background:rgba(123,104,238,.15);border:1px solid rgba(123,104,238,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--a1);margin-top:2px;
+}
+.er-end{
+  text-align:center;padding:28px;
+  border-top:1px solid var(--bd);margin-top:24px;
+}
+.er-end-title{
+  font-family:'Playfair Display',serif;font-size:22px;
+  font-weight:700;margin-bottom:8px;color:var(--a3);
+}
+
+/* ── LIBRARY ── */
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.lc{
+  background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);
+  overflow:hidden;cursor:pointer;transition:all .22s;
+}
+.lc:hover{border-color:rgba(123,104,238,.35);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.3);}
+.lc-cover{
+  height:105px;display:flex;align-items:center;justify-content:center;font-size:40px;
+}
+.lc-body{padding:14px;}
+.lc-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;margin-bottom:4px;line-height:1.3;}
+.lc-meta{font-size:11px;color:var(--mid);margin-bottom:10px;}
+.lc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.lctag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(123,104,238,.13);color:var(--a1);}
+.lc-acts{display:flex;gap:7px;}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:22px;}
+.stc{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px;}
+.stv{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;line-height:1;margin-bottom:5px;}
+.stl{font-size:11px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── TRENDING ── */
+.tr-list{display:flex;flex-direction:column;gap:8px;}
+.tri{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border:1px solid var(--bd);
+  border-radius:9px;background:var(--s2);cursor:pointer;transition:all .2s;
+}
+.tri:hover{border-color:rgba(123,104,238,.3);background:rgba(123,104,238,.05);}
+.trrank{
+  width:28px;height:28px;border-radius:7px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;
+}
+.trinfo{flex:1;}
+.trtitle{font-size:13.5px;font-weight:700;margin-bottom:2px;}
+.trsub{font-size:11.5px;color:var(--mid);}
+.trheat{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
+
+/* ── CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 200px);max-width:720px;margin:0 auto;}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px 0;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:var(--bd) transparent;}
+.msg{display:flex;gap:10px;align-items:flex-start;animation:fup .28s ease;}
+.msg.user{flex-direction:row-reverse;}
+.mav{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.msg-ai .mav{background:linear-gradient(135deg,var(--a1),var(--a2));}
+.msg-user .mav{background:var(--s2);border:1px solid var(--bd);}
+.mbub{max-width:78%;padding:12px 15px;border-radius:13px;font-size:13.5px;line-height:1.75;}
+.msg-ai .mbub{background:var(--s2);border:1px solid var(--bd);border-top-left-radius:4px;}
+.msg-user .mbub{background:rgba(123,104,238,.12);border:1px solid rgba(123,104,238,.22);border-top-right-radius:4px;}
+.mbub strong{color:var(--a1);}
+.mbub code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(123,104,238,.12);color:var(--a3);padding:1px 6px;border-radius:4px;}
+.cin-bar{display:flex;gap:9px;padding:13px 0 4px;border-top:1px solid var(--bd);}
+.cin{flex:1;background:var(--s2);border:1.5px solid var(--bd);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:all .2s;}
+.cin:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(123,104,238,.1);}
+.csend{width:42px;height:42px;background:var(--a1);border:none;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;color:#fff;flex-shrink:0;}
+.csend:hover{box-shadow:0 4px 18px rgba(123,104,238,.45);transform:translateY(-1px);}
+.tdots{display:flex;gap:5px;align-items:center;padding:4px 0;}
+.tdots span{width:7px;height:7px;border-radius:50%;background:var(--a1);animation:db 1.2s ease infinite;}
+.tdots span:nth-child(2){animation-delay:.2s;}
+.tdots span:nth-child(3){animation-delay:.4s;}
+@keyframes db{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  background:var(--s2);border:1px solid var(--bd);border-radius:11px;
+  padding:11px 20px;font-size:13.5px;font-weight:700;
+  z-index:9000;display:none;box-shadow:0 8px 28px rgba(0,0,0,.3);
+  white-space:nowrap;animation:fup .2s ease;
+}
+.toast.show{display:block;}
+
+/* FORMULE CARDS */
+.fcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.fcard{
+  background:var(--s1);border:1px solid var(--bd);
+  border-radius:var(--r);padding:18px;cursor:pointer;
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.fcard::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--c1),var(--c2));
+  transform:scaleX(0);transform-origin:left;transition:transform .22s;
+}
+.fcard:hover::after{transform:scaleX(1);}
+.fcard:hover{border-color:rgba(123,104,238,.3);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.25);}
+.fcico{font-size:26px;margin-bottom:10px;}
+.fctitle{font-size:14px;font-weight:800;margin-bottom:5px;}
+.fcdesc{font-size:12px;color:var(--mid);line-height:1.5;margin-bottom:10px;}
+.fctag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+@media(max-width:700px){.wrap{grid-template-columns:1fr}.sidebar{display:none}.content{padding:16px}}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     LOCK SCREEN
+══════════════════════════════════════════ -->
+<div id="lockScreen">
+  <div class="lock-logo">📚</div>
+  <div class="lock-title">EbookForge AI</div>
+  <div class="lock-sub">Agent Générateur d'Ebooks Premium • Powered by Claude AI</div>
+  <div class="lock-box">
+    <label class="lock-label">Mot de passe d'accès</label>
+    <input class="lock-input" id="lockInput" type="password"
+      placeholder="Entrez votre mot de passe..."
+      onkeydown="if(event.key==='Enter') unlock()">
+    <button class="lock-btn" onclick="unlock()">🔓 Accéder à l'Agent IA</button>
+    <div class="lock-err" id="lockErr">❌ Mot de passe incorrect</div>
+    <button class="lock-setup-btn" onclick="showSetupGuide()">
+      ⚙️ Comment configurer l'agent ? (Guide)
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SETUP GUIDE
+══════════════════════════════════════════ -->
+<div id="setupGuide">
+  <div class="guide-card">
+    <div class="guide-header">
+      <h2>⚙️ Guide de Configuration</h2>
+      <p>Suivez ces étapes pour activer la génération IA réelle de vos ebooks</p>
+    </div>
+    <div class="guide-body">
+
+      <div class="guide-step">
+        <div class="gstep-num">1</div>
+        <div>
+          <div class="gstep-title">🌐 Créer un compte Anthropic</div>
+          <div class="gstep-desc">
+            Allez sur <strong>console.anthropic.com</strong> et créez un compte gratuit.
+            Anthropic vous offre <strong>$5 de crédit</strong> pour commencer (≈ 20 ebooks).
+          </div>
+          <div class="gstep-code">https://console.anthropic.com</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gstep-num">2</div>
+        <div>
+          <div class="gstep-title">🔑 Obtenir votre clé API</div>
+          <div class="gstep-desc">
+            Dans votre tableau de bord Anthropic :<br>
+            → Cliquez sur <strong>"API Keys"</strong> dans le menu gauche<br>
+            → Cliquez sur <strong>"Create Key"</strong><br>
+            → Copiez la clé (commence par <code>sk-ant-api03-...</code>)
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gstep-num">3</div>
+        <div>
+          <div class="gstep-title">📝 Coller la clé dans le fichier</div>
+          <div class="gstep-desc">
+            Ouvrez <strong>index.html</strong> avec un éditeur de texte (Notepad, VS Code).
+            Trouvez la ligne et remplacez :
+          </div>
+          <div class="gstep-code">const ANTHROPIC_API_KEY = "VOTRE_CLE_API_ICI";</div>
+          <div class="gstep-desc" style="margin-top:8px">Par votre vraie clé :</div>
+          <div class="gstep-code">const ANTHROPIC_API_KEY = "sk-ant-api03-xxxx...";</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gstep-num">4</div>
+        <div>
+          <div class="gstep-title">🚀 Déployer sur GitHub Pages (Gratuit)</div>
+          <div class="gstep-desc">
+            1. Créez un compte sur <strong>github.com</strong><br>
+            2. Créez un nouveau dépôt public nommé <strong>ebookforge-ai</strong><br>
+            3. Uploadez ce fichier <strong>index.html</strong><br>
+            4. Settings → Pages → Branch: main → Save<br>
+            5. Votre lien : <strong>votre-nom.github.io/ebookforge-ai</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gstep-num">5</div>
+        <div>
+          <div class="gstep-title">💰 Coût de génération</div>
+          <div class="gstep-desc">
+            • Ebook court (5 000 mots) ≈ <strong>$0.05</strong><br>
+            • Ebook long (25 000 mots) ≈ <strong>$0.30</strong><br>
+            • $5 de crédit = environ <strong>15 à 100 ebooks</strong><br>
+            • Rechargez votre compte Anthropic selon vos besoins
+          </div>
+        </div>
+      </div>
+
+      <button class="guide-close" onclick="hideSetupGuide()">✓ J'ai compris — Fermer ce guide</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP (visible after unlock)
+══════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="hlogo">📚</div>
+    <div>
+      <div class="htitle">EbookForge AI</div>
+      <div class="hsub">Agent Générateur d'Ebooks Premium</div>
+    </div>
+    <div class="hright">
+      <div class="api-status" id="apiStatus">
+        <div class="dot-off"></div> Clé non configurée
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="wrap">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-sec">Agent Principal</div>
+      <div class="nb on" onclick="show('gen')"><span class="nbico">⚡</span>Générateur IA<span class="nbbadge hot">MAIN</span></div>
+      <div class="nb" onclick="show('chat')"><span class="nbico">💬</span>Coach IA Chat</div>
+
+      <div class="sb-sec">Niches Populaires</div>
+      <div class="nb" onclick="qn('Finance & Investissement')"><span class="nbico">💰</span>Finance</div>
+      <div class="nb" onclick="qn('Intelligence Artificielle')"><span class="nbico">🤖</span>IA & ChatGPT</div>
+      <div class="nb" onclick="qn('Business & Entrepreneuriat')"><span class="nbico">🚀</span>Business</div>
+      <div class="nb" onclick="qn('Santé & Bien-être')"><span class="nbico">🏃</span>Santé</div>
+      <div class="nb" onclick="qn('Marketing Digital')"><span class="nbico">📱</span>Marketing</div>
+      <div class="nb" onclick="qn('Développement Personnel')"><span class="nbico">🌱</span>Dev. Personnel</div>
+      <div class="nb" onclick="qn('Crypto & Web3')"><span class="nbico">₿</span>Crypto</div>
+      <div class="nb" onclick="qn('Freelance & Revenus en Ligne')"><span class="nbico">💼</span>Freelance</div>
+      <div class="nb" onclick="qn('Spiritualité & Religion')"><span class="nbico">✝️</span>Spiritualité</div>
+
+      <div class="sb-sec">Outils</div>
+      <div class="nb" onclick="show('trending')"><span class="nbico">🔥</span>Tendances 2025<span class="nbbadge new">HOT</span></div>
+      <div class="nb" onclick="show('lib')"><span class="nbico">📖</span>Bibliothèque<span class="nbbadge cnt" id="libBadge">0</span></div>
+      <div class="nb" onclick="show('formules')"><span class="nbico">💎</span>Formules Pro</div>
+      <div class="nb" onclick="show('config')"><span class="nbico">⚙️</span>Configuration</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ═══ GENERATOR ═══ -->
+      <div class="panel on" id="panel-gen">
+        <div class="sh">
+          <h2>⚡ Générateur d'Ebook IA</h2>
+          <p>Configurez votre ebook et l'IA génère un produit digital complet de <strong>20 000 à 30 000 mots</strong>, structuré et prêt à vendre.</p>
+        </div>
+
+        <!-- NICHE -->
+        <div class="card">
+          <div class="ct">① Choisissez votre niche</div>
+          <div class="cs">La catégorie la plus demandée sur le marché actuel</div>
+          <div class="ng">
+            <div class="nc sel" data-n="Finance & Investissement" onclick="selN(this)">
+              <div class="nhot">🔥 HOT</div><div class="nce">💰</div>
+              <div class="ncn">Finance & Invest.</div><div class="ncs">Bourse, épargne, richesse</div>
+            </div>
+            <div class="nc" data-n="Intelligence Artificielle & ChatGPT" onclick="selN(this)">
+              <div class="nhot">⚡ VIRAL</div><div class="nce">🤖</div>
+              <div class="ncn">IA & ChatGPT</div><div class="ncs">Prompts, outils IA</div>
+            </div>
+            <div class="nc" data-n="Business & Entrepreneuriat" onclick="selN(this)">
+              <div class="nhot">🚀 TOP</div><div class="nce">🚀</div>
+              <div class="ncn">Business & Startup</div><div class="ncs">Créer, vendre, scaler</div>
+            </div>
+            <div class="nc" data-n="Santé & Bien-être" onclick="selN(this)">
+              <div class="nce">🏃</div><div class="ncn">Santé & Bien-être</div><div class="ncs">Fitness, nutrition</div>
+            </div>
+            <div class="nc" data-n="Marketing Digital & Réseaux Sociaux" onclick="selN(this)">
+              <div class="nhot">📈 UP</div><div class="nce">📱</div>
+              <div class="ncn">Marketing Digital</div><div class="ncs">SEO, RS, publicité</div>
+            </div>
+            <div class="nc" data-n="Développement Personnel & Leadership" onclick="selN(this)">
+              <div class="nce">🌱</div><div class="ncn">Dev. Personnel</div><div class="ncs">Mindset, habitudes</div>
+            </div>
+            <div class="nc" data-n="Crypto & Web3 & NFT" onclick="selN(this)">
+              <div class="nce">₿</div><div class="ncn">Crypto & Web3</div><div class="ncs">Bitcoin, DeFi, NFT</div>
+            </div>
+            <div class="nc" data-n="Freelance & Revenus en Ligne" onclick="selN(this)">
+              <div class="nce">💼</div><div class="ncn">Freelance & Revenus</div><div class="ncs">Side hustle, remote</div>
+            </div>
+            <div class="nc" data-n="Spiritualité & Religion" onclick="selN(this)">
+              <div class="nce">✝️</div><div class="ncn">Spiritualité & Foi</div><div class="ncs">Bible, prière, foi</div>
+            </div>
+            <div class="nc" data-n="Cuisine & Recettes" onclick="selN(this)">
+              <div class="nce">🍽️</div><div class="ncn">Cuisine & Recettes</div><div class="ncs">Recettes, nutrition</div>
+            </div>
+            <div class="nc" data-n="Parentalité & Éducation des Enfants" onclick="selN(this)">
+              <div class="nce">👨‍👩‍👧</div><div class="ncn">Parentalité</div><div class="ncs">Famille, enfants</div>
+            </div>
+            <div class="nc" data-n="Productivité & Organisation" onclick="selN(this)">
+              <div class="nce">⏰</div><div class="ncn">Productivité</div><div class="ncs">GTD, focus, systèmes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PARAMS -->
+        <div class="card">
+          <div class="ct">② Paramètres de l'ebook</div>
+          <div class="cs">Personnalisez votre produit digital premium</div>
+
+          <div class="fr">
+            <div class="fi">
+              <label class="fl">Titre (ou laisser vide pour auto-génération)</label>
+              <input id="eTitle" type="text" placeholder="Ex : 10 Stratégies pour devenir riche à 30 ans">
+            </div>
+            <div class="fi">
+              <label class="fl">Public cible</label>
+              <select id="eAud">
+                <option value="débutants complets">Débutants complets</option>
+                <option value="personnes de niveau intermédiaire">Niveau intermédiaire</option>
+                <option value="professionnels avancés">Professionnels avancés</option>
+                <option value="entrepreneurs et freelances">Entrepreneurs & Freelances</option>
+                <option value="étudiants et jeunes adultes">Étudiants & Jeunes</option>
+                <option value="parents et familles">Parents & Familles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fr">
+            <div class="fi">
+              <label class="fl">Langue</label>
+              <select id="eLang">
+                <option value="français">🇫🇷 Français</option>
+                <option value="anglais">🇬🇧 Anglais</option>
+                <option value="espagnol">🇪🇸 Espagnol</option>
+                <option value="portugais">🇧🇷 Portugais</option>
+              </select>
+            </div>
+            <div class="fi">
+              <label class="fl">Ton & Style d'écriture</label>
+              <select id="eTone">
+                <option value="professionnel, autoritaire et expert">Professionnel & Expert</option>
+                <option value="pédagogique, clair et accessible">Pédagogique & Accessible</option>
+                <option value="motivant, inspirant et énergique">Motivant & Inspirant</option>
+                <option value="pratique, direct et no-fluff">Pratique & No-Fluff</option>
+                <option value="conversationnel, chaleureux et amical">Conversationnel & Amical</option>
+                <option value="scientifique, rigoureux et basé sur les données">Scientifique & Data-Driven</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fr">
+            <div class="fi">
+              <label class="fl">Nombre de chapitres : <span id="chapVal" style="color:var(--a1)">10</span></label>
+              <input type="range" id="chapNum" min="5" max="20" value="10"
+                style="width:100%;accent-color:var(--a1);margin-top:6px;height:5px"
+                oninput="document.getElementById('chapVal').textContent=this.value">
+            </div>
+            <div class="fi">
+              <label class="fl">Profondeur du contenu</label>
+              <select id="eDepth">
+                <option value="guide complet avec exemples pratiques détaillés et études de cas">Guide complet & détaillé</option>
+                <option value="masterclass ultra-approfondie avec recherches, données, études de cas réels, témoignages et exercices pratiques step-by-step">Masterclass ultra-approfondie</option>
+                <option value="bible exhaustive et encyclopédique couvrant chaque aspect en profondeur avec exemples, contre-exemples, nuances et applications pratiques">Bible exhaustive</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- LENGTH -->
+          <label class="fl" style="display:block;margin-bottom:8px">Longueur cible de l'ebook</label>
+          <div class="len-grid">
+            <div class="len-opt" onclick="selLen(this,'5000-8000')">
+              <div class="len-val">~6K</div><div class="len-label">Mots</div>
+              <div style="font-size:9px;color:var(--dim);margin-top:2px">Court</div>
+            </div>
+            <div class="len-opt" onclick="selLen(this,'10000-15000')">
+              <div class="len-val">~12K</div><div class="len-label">Mots</div>
+              <div style="font-size:9px;color:var(--dim);margin-top:2px">Moyen</div>
+            </div>
+            <div class="len-opt sel" onclick="selLen(this,'20000-30000')">
+              <div class="len-val">~25K</div><div class="len-label">Mots</div>
+              <div style="font-size:9px;color:var(--a1);margin-top:2px">Long ★</div>
+            </div>
+            <div class="len-opt" onclick="selLen(this,'35000-50000')">
+              <div class="len-val">~40K</div><div class="len-label">Mots</div>
+              <div style="font-size:9px;color:var(--dim);margin-top:2px">Complet</div>
+            </div>
+          </div>
+
+          <!-- ELEMENTS -->
+          <div class="fr full">
+            <div class="fi">
+              <label class="fl">Éléments à inclure obligatoirement</label>
+              <div class="trow" id="elems">
+                <div class="tp on" onclick="this.classList.toggle('on')">✅ Introduction percutante</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">📋 Table des matières</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">💡 Points clés par chapitre</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">✍️ Exercices pratiques</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">📊 Exemples & chiffres réels</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">🎯 Résumé exécutif</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">📈 Études de cas complètes</div>
+                <div class="tp on" onclick="this.classList.toggle('on')">❓ FAQ détaillée</div>
+                <div class="tp" onclick="this.classList.toggle('on')">📝 Plan d'action 30 jours</div>
+                <div class="tp" onclick="this.classList.toggle('on')">💬 Témoignages</div>
+                <div class="tp" onclick="this.classList.toggle('on')">⭐ Bonus exclusif</div>
+                <div class="tp" onclick="this.classList.toggle('on')">🔗 Ressources & Références</div>
+                <div class="tp" onclick="this.classList.toggle('on')">📐 Templates & Modèles</div>
+                <div class="tp" onclick="this.classList.toggle('on')">🔢 Checklists pratiques</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fr full">
+            <div class="fi">
+              <label class="fl">Problème principal résolu (optionnel — enrichit la génération)</label>
+              <textarea id="eProb" placeholder="Ex : Les lecteurs ne savent pas comment investir leur argent avec un petit salaire. Ils ont peur de perdre leur argent en bourse et ne savent pas par où commencer..."></textarea>
+            </div>
+          </div>
+
+          <button class="gbtn" onclick="generate()" id="genBtn">
+            🚀 Générer l'Ebook Complet avec l'IA (20 000 – 30 000 mots)
+          </button>
+        </div>
+
+        <!-- PROGRESS -->
+        <div id="progArea" style="display:none"></div>
+
+        <!-- RESULT -->
+        <div id="resultArea" style="display:none"></div>
+      </div>
+
+      <!-- ═══ CHAT ═══ -->
+      <div class="panel" id="panel-chat">
+        <div class="sh">
+          <h2>💬 Coach IA — Expert Ebooks</h2>
+          <p>Posez toutes vos questions sur la création, la monétisation et la vente d'ebooks.</p>
+        </div>
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="chatMsgs">
+            <div class="msg msg-ai">
+              <div class="mav">🤖</div>
+              <div class="mbub">
+                Bonjour ! Je suis votre <strong>Coach IA Ebooks Premium</strong>.<br><br>
+                Je peux vous aider sur :<br>
+                📚 Créer des ebooks qui se vendent vraiment<br>
+                💰 Fixer le bon prix et maximiser vos revenus<br>
+                📣 Marketer et distribuer vos produits digitaux<br>
+                🎯 Trouver les niches les plus rentables en 2025<br>
+                ⚡ Automatiser la création avec l'IA<br><br>
+                Quelle est votre question ? 🎯
+              </div>
+            </div>
+          </div>
+          <div class="cin-bar">
+            <input class="cin" id="chatIn"
+              placeholder="Ex : Quelle niche d'ebook est la plus rentable en 2025 ?"
+              onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="csend" onclick="sendChat()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TRENDING ═══ -->
+      <div class="panel" id="panel-trending">
+        <div class="sh"><h2>🔥 Sujets Tendances 2025</h2><p>Les thèmes d'ebooks les plus recherchés. Cliquez pour générer directement.</p></div>
+        <div class="stats-row">
+          <div class="stc"><div class="stv" style="color:var(--a2)">$4.7B</div><div class="stl">Marché ebooks mondial</div></div>
+          <div class="stc"><div class="stv" style="color:var(--a3)">+18%</div><div class="stl">Croissance annuelle</div></div>
+          <div class="stc"><div class="stv" style="color:var(--a1)">$15-97</div><div class="stl">Prix moyen</div></div>
+          <div class="stc"><div class="stv" style="color:var(--a4)">85%</div><div class="stl">Marge bénéfice</div></div>
+        </div>
+        <div class="card">
+          <div class="ct">🏆 Top 20 Sujets les Plus Vendus</div>
+          <div class="cs">Données Amazon KDP, Gumroad, Etsy Digital — 2025</div>
+          <div class="tr-list" id="trendList"></div>
+        </div>
+      </div>
+
+      <!-- ═══ LIBRARY ═══ -->
+      <div class="panel" id="panel-lib">
+        <div class="sh"><h2>📖 Ma Bibliothèque</h2><p>Tous vos ebooks générés. Téléchargez en TXT ou PDF.</p></div>
+        <div class="lib-grid" id="libGrid"></div>
+        <div id="libEmpty" class="card" style="text-align:center;padding:40px;color:var(--mid)">
+          <div style="font-size:40px;margin-bottom:12px">📚</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">Bibliothèque vide</div>
+          <div style="font-size:13px">Générez votre premier ebook pour le voir ici.</div>
+        </div>
+      </div>
+
+      <!-- ═══ FORMULES ═══ -->
+      <div class="panel" id="panel-formules">
+        <div class="sh"><h2>💎 Formules d'Ebooks Premium</h2><p>Structures éprouvées qui génèrent le plus de ventes.</p></div>
+        <div class="fcards">
+          <div class="fcard" style="--c1:#7B68EE;--c2:#9B59B6" onclick="applyF('bestseller')">
+            <div class="fcico">🏆</div>
+            <div class="fctitle" style="color:var(--a4)">Le Bestseller System</div>
+            <div class="fcdesc">La formule utilisée par 80% des ebooks bestsellers Amazon. Accroche → Problème → Promesse → Preuve → Méthode → CTA</div>
+            <span class="fctag" style="background:rgba(255,179,71,.12);color:var(--a4)">Finance, Business, Marketing</span>
+          </div>
+          <div class="fcard" style="--c1:#00D9AA;--c2:#00BFA5" onclick="applyF('transformation')">
+            <div class="fcico">🦋</div>
+            <div class="fctitle" style="color:var(--a3)">La Transformation Journey</div>
+            <div class="fcdesc">Guide le lecteur de A (douloureux) vers B (désiré). Diagnostic → Obstacles → Méthode → Résultats → Témoignages</div>
+            <span class="fctag" style="background:rgba(0,217,170,.1);color:var(--a3)">Santé, Développement personnel</span>
+          </div>
+          <div class="fcard" style="--c1:#7B68EE;--c2:#38BDF8" onclick="applyF('playbook')">
+            <div class="fcico">📋</div>
+            <div class="fctitle" style="color:#38BDF8">The Ultimate Playbook</div>
+            <div class="fcdesc">Manuel complet avec frameworks et systèmes actionnables. Framework → Système → Outils → Checklists → Plan d'action</div>
+            <span class="fctag" style="background:rgba(56,189,248,.1);color:#38BDF8">Productivité, Tech, Freelance</span>
+          </div>
+          <div class="fcard" style="--c1:#FF6B9D;--c2:#FF4081" onclick="applyF('secrets')">
+            <div class="fcico">🔐</div>
+            <div class="fctitle" style="color:var(--a2)">Les Secrets Révélés</div>
+            <div class="fcdesc">Formule mystère + révélation qui crée une addiction à la lecture. Mythe → Vérité → Secrets 1…N → Application</div>
+            <span class="fctag" style="background:rgba(255,107,157,.1);color:var(--a2)">Crypto, Investissement, Mindset</span>
+          </div>
+          <div class="fcard" style="--c1:#FFB347;--c2:#FF9A3C" onclick="applyF('guide')">
+            <div class="fcico">🎯</div>
+            <div class="fctitle" style="color:var(--a4)">Le Guide Pratique Ultime</div>
+            <div class="fcdesc">La référence encyclopédique. Introduction → Bases → Intermédiaire → Avancé → FAQ → Ressources</div>
+            <span class="fctag" style="background:rgba(255,179,71,.12);color:var(--a4)">Cuisine, Parentalité, Spiritualité</span>
+          </div>
+          <div class="fcard" style="--c1:#7B68EE;--c2:#FF6B9D" onclick="applyF('challenge')">
+            <div class="fcico">🏃</div>
+            <div class="fctitle" style="color:var(--a1)">Le Programme Challenge</div>
+            <div class="fcdesc">Plan jour par jour qui crée l'engagement. Mission → 4 semaines → Exercices quotidiens → Suivi → Célébration</div>
+            <span class="fctag" style="background:rgba(123,104,238,.12);color:var(--a1)">Fitness, Habitudes, Formation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CONFIG ═══ -->
+      <div class="panel" id="panel-config">
+        <div class="sh"><h2>⚙️ Configuration de l'Agent</h2><p>Paramètres de la clé API et de l'agent IA.</p></div>
+        <div class="card">
+          <div class="ct">🔑 Clé API Anthropic</div>
+          <div class="cs">Entrez votre clé API pour activer la génération réelle des ebooks</div>
+          <label class="fl" style="display:block;margin-bottom:7px">Clé API (sk-ant-api03-...)</label>
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-XXXXXXXXXXXXXXXXXXXXXXXX"
+            style="margin-bottom:12px">
+          <button style="padding:10px 20px;background:var(--a1);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:700;color:#fff;cursor:pointer"
+            onclick="saveApiKey()">💾 Sauvegarder la clé API</button>
+          <div style="margin-top:12px;font-size:12px;color:var(--dim)">
+            ℹ️ La clé est stockée localement dans votre navigateur. Elle n'est jamais envoyée à un serveur tiers.
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">📊 Statistiques d'utilisation</div>
+          <div id="usageStats" style="font-size:13.5px;color:var(--mid)">Chargement...</div>
+        </div>
+        <div class="card">
+          <div class="ct">❓ Besoin d'aide ?</div>
+          <div style="font-size:13.5px;color:var(--mid);line-height:1.7">
+            Pour obtenir votre clé API Anthropic :<br>
+            1. Allez sur <strong style="color:var(--a3)">console.anthropic.com</strong><br>
+            2. Créez un compte gratuit<br>
+            3. Cliquez sur "API Keys" → "Create Key"<br>
+            4. Copiez et collez votre clé ci-dessus<br><br>
+            💰 <strong>$5 de crédit offert</strong> à l'inscription = ~20 ebooks longs<br><br>
+            Auteur de cet agent : <strong style="color:var(--a1)">Jean Paul BOGNON</strong><br>
+            Contact : <strong style="color:var(--a3)">jeanpaulbognon3@gmail.com</strong>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /wrap -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT — LOGIQUE PRINCIPALE
+═══════════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let niche = 'Finance & Investissement';
+let targetLen = '20000-30000';
+let library = JSON.parse(localStorage.getItem('ef_lib') || '[]');
+let chatHistory = [];
+let generationCount = parseInt(localStorage.getItem('ef_gencount') || '0');
+
+// Get API key (from config or localStorage)
+function getApiKey() {
+  const stored = localStorage.getItem('ef_apikey');
+  if (stored && stored !== 'VOTRE_CLE_API_ICI') return stored;
+  if (ANTHROPIC_API_KEY && ANTHROPIC_API_KEY !== 'VOTRE_CLE_API_ICI') return ANTHROPIC_API_KEY;
+  return null;
+}
+
+// ══════════════════════════════════════════
+// LOCK / UNLOCK
+// ══════════════════════════════════════════
+function unlock() {
+  const val = document.getElementById('lockInput').value;
+  if (val === ACCESS_PASSWORD) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('lockErr').style.display = 'block';
+    document.getElementById('lockInput').value = '';
+    setTimeout(() => document.getElementById('lockErr').style.display = 'none', 2500);
+  }
+}
+document.getElementById('lockInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') unlock();
+});
+function showSetupGuide() { document.getElementById('setupGuide').classList.add('show'); }
+function hideSetupGuide() { document.getElementById('setupGuide').classList.remove('show'); }
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function initApp() {
+  checkApiStatus();
+  updateLibBadge();
+  renderTrending();
+  renderLibrary();
+  renderUsageStats();
+  const saved = localStorage.getItem('ef_apikey');
+  if (saved) document.getElementById('apiKeyInput').value = saved;
+}
+
+function checkApiStatus() {
+  const key = getApiKey();
+  const el = document.getElementById('apiStatus');
+  if (key) {
+    el.className = 'api-status api-ok';
+    el.innerHTML = '<div class="dot-live"></div> IA Connectée';
+  } else {
+    el.className = 'api-status api-no';
+    el.innerHTML = '<div class="dot-off"></div> Clé non configurée';
+  }
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { toast('⚠️ Entrez votre clé API'); return; }
+  localStorage.setItem('ef_apikey', val);
+  checkApiStatus();
+  toast('✅ Clé API sauvegardée avec succès !');
+  renderUsageStats();
+}
+
+function renderUsageStats() {
+  document.getElementById('usageStats').innerHTML = `
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <div><div style="font-size:22px;font-weight:800;color:var(--a1)">${library.length}</div><div>Ebooks générés</div></div>
+      <div><div style="font-size:22px;font-weight:800;color:var(--a3)">${generationCount}</div><div>Générations totales</div></div>
+      <div><div style="font-size:22px;font-weight:800;color:var(--a4)">${library.reduce((s,e)=>s+(e.words||0),0).toLocaleString()}</div><div>Mots générés au total</div></div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(n => n.classList.remove('on'));
+  document.getElementById('panel-' + id).classList.add('on');
+  if (id === 'lib') renderLibrary();
+  if (id === 'config') renderUsageStats();
+}
+
+function qn(n) {
+  show('gen');
+  niche = n;
+  document.querySelectorAll('.nc').forEach(c => c.classList.toggle('sel', c.dataset.n === n));
+}
+function selN(el) {
+  document.querySelectorAll('.nc').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  niche = el.dataset.n;
+}
+function selLen(el, val) {
+  document.querySelectorAll('.len-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+  targetLen = val;
+}
+
+// ══════════════════════════════════════════
+// GENERATE
+// ══════════════════════════════════════════
+async function generate() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    toast('❌ Configurez votre clé API dans ⚙️ Configuration');
+    show('config');
+    return;
+  }
+
+  const title   = document.getElementById('eTitle').value.trim();
+  const aud     = document.getElementById('eAud').value;
+  const lang    = document.getElementById('eLang').value;
+  const tone    = document.getElementById('eTone').value;
+  const chap    = document.getElementById('chapNum').value;
+  const depth   = document.getElementById('eDepth').value;
+  const prob    = document.getElementById('eProb').value.trim();
+  const elems   = [...document.querySelectorAll('#elems .tp.on')].map(p => p.textContent.trim()).join(', ');
+  const [minW, maxW] = targetLen.split('-').map(Number);
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération en cours...';
+
+  const progArea = document.getElementById('progArea');
+  document.getElementById('resultArea').style.display = 'none';
+  progArea.style.display = 'block';
+
+  const STEPS = [
+    { ico:'🔍', lbl:'Analyse de la niche & du marché', sub:'Identification des angles les plus vendeurs...' },
+    { ico:'🧠', lbl:'Architecture du plan', sub:'Conception de la structure en ' + chap + ' chapitres...' },
+    { ico:'✍️', lbl:'Rédaction — Introduction & Chapitres 1-3', sub:'Génération du contenu de haute valeur...' },
+    { ico:'📖', lbl:'Rédaction — Chapitres 4-7 & études de cas', sub:'Approfondissement avec exemples réels...' },
+    { ico:'💡', lbl:'Rédaction — Chapitres finaux & Bonus', sub:'Complétion et enrichissement du contenu...' },
+    { ico:'💎', lbl:'Finalisation & Contrôle qualité', sub:'Mise en forme et optimisation finale...' },
+  ];
+
+  progArea.innerHTML = `
+    <div class="prog-wrap">
+      <div class="prog-title">🚀 Génération de votre Ebook Premium</div>
+      <div style="font-size:13px;color:var(--mid);margin-bottom:14px">
+        Niche : <strong style="color:var(--a1)">${niche}</strong> — ${chap} chapitres — Cible : ~${minW.toLocaleString()} mots
+      </div>
+      <div class="pbar-outer"><div class="pbar-inner" id="pbar" style="width:0%"></div></div>
+      <div class="psteps">
+        ${STEPS.map((s,i) => `
+          <div class="pstep" id="ps${i}">
+            <div class="pico">${s.ico}</div>
+            <div>
+              <div class="plbl">${s.lbl}</div>
+              <div class="psub">${s.sub}</div>
+            </div>
+            <div style="margin-left:auto" id="pi${i}"></div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  // Animate initial steps while calling API
+  for (let i = 0; i < 2; i++) {
+    document.getElementById(`ps${i}`).classList.add('run');
+    document.getElementById(`pi${i}`).innerHTML = '<div class="spin"></div>';
+    document.getElementById('pbar').style.width = ((i+1)/STEPS.length*100) + '%';
+    await new Promise(r => setTimeout(r, 700));
+  }
+
+  // ─── PROMPT ULTRA-COMPLET ───
+  const titleLine = title ? `TITRE IMPOSÉ : "${title}"` : `Génère un titre exceptionnel, accrocheur et vendeur qui donne envie d'acheter immédiatement`;
+  const probLine  = prob ? `\nPROBLÈME CENTRAL : "${prob}"` : '';
+
+  const PROMPT = `Tu es un auteur expert de renommée mondiale, spécialisé dans la création d'ebooks bestsellers de très haute valeur marchande.
+
+═══════════════════════════════════════════
+MISSION : Créer un EBOOK COMPLET et EXHAUSTIF
+═══════════════════════════════════════════
+
+NICHE : ${niche}
+${titleLine}
+PUBLIC CIBLE : ${aud}
+LANGUE : ${lang}
+TON & STYLE : ${tone}
+NOMBRE DE CHAPITRES : ${chap}
+LONGUEUR CIBLE : ${minW.toLocaleString()} à ${maxW.toLocaleString()} mots (OBLIGATOIRE — développe chaque section en profondeur)
+PROFONDEUR : ${depth}
+ÉLÉMENTS OBLIGATOIRES : ${elems}${probLine}
+
+═══════════════════════════════════════════
+STRUCTURE COMPLÈTE À PRODUIRE
+═══════════════════════════════════════════
+
+**[TITRE PRINCIPAL]** — Titre + sous-titre accrocheur
+
+**[AVANT-PROPOS]** (300-500 mots)
+- Qui est l'auteur et sa légitimité
+- Pourquoi ce livre existe
+- Promesse de transformation claire
+- Comment lire et utiliser ce livre
+
+**[TABLE DES MATIÈRES]**
+- Liste numérotée des ${chap} chapitres
+- Sous-sections de chaque chapitre
+- Page ou section de référence
+
+**[INTRODUCTION]** (600-800 mots)
+- Accroche puissante (histoire, statistique choc ou question provocante)
+- Présentation du problème et de la douleur
+- La grande promesse de ce livre
+- Qui devrait lire ce livre
+- Ce que vous allez apprendre
+
+**[CHAPITRES 1 à ${chap}]** — CHAQUE CHAPITRE DOIT CONTENIR (800-2000 mots minimum par chapitre) :
+- Titre de chapitre accrocheur avec numéro
+- Introduction du chapitre (pourquoi c'est important)
+- 3 à 5 sections avec contenu détaillé et actionnable
+- Exemples concrets avec chiffres réels
+- Études de cas ou témoignages
+- Encadrés "Point Clé", "Conseil Pro", "Attention"
+- Exercice pratique ou action concrète à la fin
+- Résumé du chapitre en bullet points
+
+**[CONCLUSION]** (400-600 mots)
+- Récapitulatif de la transformation
+- Les prochaines étapes concrètes
+- Message de motivation finale
+- Appel à l'action clair
+
+**[FAQ — QUESTIONS FRÉQUENTES]** (20 questions minimum avec réponses détaillées)
+
+**[BONUS]** — Un outil premium exclusif :
+- Template, checklist, plan d'action ou mini-guide
+- Contenu unique non disponible ailleurs
+
+**[RESSOURCES & RÉFÉRENCES]**
+- Livres recommandés
+- Sites web utiles
+- Outils et applications
+
+═══════════════════════════════════════════
+EXIGENCES ABSOLUES DE QUALITÉ
+═══════════════════════════════════════════
+
+1. LONGUEUR : Développe ABONDAMMENT chaque section. Vise ${minW.toLocaleString()}+ mots total. NE JAMAIS raccourcir ou résumer — développe en profondeur.
+2. VALEUR : Chaque paragraphe doit apporter une valeur concrète et actionnable. Zéro contenu vague ou générique.
+3. CHIFFRES : Inclus des statistiques, pourcentages et données spécifiques pour crédibiliser le contenu.
+4. EXEMPLES : Donne des exemples réels, des noms de personnes ou entreprises connues quand c'est pertinent.
+5. EXERCICES : Chaque chapitre doit se terminer par un exercice pratique que le lecteur peut faire immédiatement.
+6. STRUCTURE : Utilise des titres H2 (##) et H3 (###) pour structurer clairement le contenu.
+7. LISTES : Utilise des bullet points (-) et des listes numérotées pour faciliter la lecture.
+8. ENCADRÉS : Signale les conseils importants avec des emojis spécifiques (💡 Conseil, ⚠️ Attention, 🔑 Point Clé, 📊 Statistique, 🎯 Action).
+
+Commence maintenant la rédaction COMPLÈTE et INTÉGRALE de l'ebook :`;
+
+  // Continue animating steps while generating
+  const animInterval = setInterval(async () => {
+    const current = [...document.querySelectorAll('.pstep.run')].length;
+    if (current < STEPS.length) {
+      document.getElementById(`ps${current}`).classList.add('run');
+      document.getElementById(`pi${current}`).innerHTML = '<div class="spin"></div>';
+      document.getElementById('pbar').style.width = ((current+1)/STEPS.length*100) + '%';
+    }
+  }, 2500);
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        messages: [{ role: 'user', content: PROMPT }]
+      })
+    });
+
+    clearInterval(animInterval);
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'Erreur API');
+    }
+
+    const data = await resp.json();
+    const rawText = data.content?.find(b => b.type === 'text')?.text || '';
+    if (!rawText) throw new Error('Réponse vide');
+
+    // Mark all steps done
+    for (let i = 0; i < STEPS.length; i++) {
+      const step = document.getElementById(`ps${i}`);
+      step.classList.remove('run'); step.classList.add('done');
+      document.getElementById(`pi${i}`).innerHTML = '<span style="color:var(--a3);font-size:18px">✓</span>';
+    }
+    document.getElementById('pbar').style.width = '100%';
+
+    // Extract title
+    const titleMatch = rawText.match(/\*\*\[TITRE[^\]]*\]\*\*[:\s]*([\s\S]{1,120}?)(?:\n|$)/)
+                    || rawText.match(/^#\s+(.+)$/m)
+                    || rawText.match(/\*\*(.{15,100})\*\*/);
+    const extractedTitle = titleMatch
+      ? titleMatch[1].replace(/\*\*/g,'').replace(/—.*/,'').trim()
+      : (title || niche + ' — Guide Complet');
+
+    const wordCount = rawText.split(/\s+/).length;
+
+    // Save to library
+    const entry = {
+      id: Date.now(),
+      title: extractedTitle,
+      niche, aud, lang, tone,
+      chapters: parseInt(chap),
+      content: rawText,
+      words: wordCount,
+      createdAt: new Date().toLocaleDateString('fr-FR'),
+      emoji: getNicheEmoji(niche),
+      color: getNicheColor(niche),
+    };
+    library.unshift(entry);
+    if (library.length > 50) library = library.slice(0,50);
+    localStorage.setItem('ef_lib', JSON.stringify(library));
+    generationCount++;
+    localStorage.setItem('ef_gencount', generationCount);
+    updateLibBadge();
+
+    await new Promise(r => setTimeout(r, 400));
+    renderResult(entry);
+    toast('🎉 Ebook généré avec succès ! ' + wordCount.toLocaleString() + ' mots');
+
+  } catch(err) {
+    clearInterval(animInterval);
+    progArea.innerHTML = `
+      <div class="card" style="border-color:rgba(255,107,157,.3)">
+        <div style="color:var(--a2);font-size:15px;font-weight:700;margin-bottom:8px">❌ Erreur de génération</div>
+        <div style="color:var(--mid);font-size:13.5px;margin-bottom:12px">${err.message}</div>
+        <div style="font-size:12.5px;color:var(--dim)">
+          Solutions possibles :<br>
+          • Vérifiez que votre clé API est correcte dans ⚙️ Configuration<br>
+          • Assurez-vous d'avoir du crédit sur votre compte Anthropic<br>
+          • Réessayez dans quelques secondes
+        </div>
+      </div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🚀 Générer l\'Ebook Complet avec l\'IA (20 000 – 30 000 mots)';
+}
+
+// ══════════════════════════════════════════
+// RENDER RESULT
+// ══════════════════════════════════════════
+function renderResult(entry) {
+  const resultArea = document.getElementById('resultArea');
+  resultArea.style.display = 'block';
+  resultArea.innerHTML = `
+    <div class="result-wrap">
+      <div class="rtoolbar">
+        <div class="rt-info">
+          <div class="rt-title">${entry.title}</div>
+          <div class="rt-meta">${entry.niche} • ${entry.chapters} chapitres • ${entry.lang} • ${entry.aud}</div>
+        </div>
+        <span class="wbadge">${(entry.words||0).toLocaleString()} mots</span>
+        <button class="tbtn tp3" onclick="copyText(${entry.id})">📋 Copier</button>
+        <button class="tbtn tp2" onclick="downloadTxt(${entry.id})">⬇ TXT</button>
+        <button class="tbtn tp1" onclick="downloadPDF(${entry.id})">📄 PDF</button>
+      </div>
+      <div class="ebook-reader" id="ebookReader">${formatEbook(entry.content)}</div>
+    </div>`;
+  resultArea.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ══════════════════════════════════════════
+// FORMAT EBOOK HTML
+// ══════════════════════════════════════════
+function formatEbook(text) {
+  // Parse line by line for better formatting
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+  let inNumList = false;
+  let chNum = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Close lists when needed
+    const isBullet = /^[-•]\s+/.test(line);
+    const isNumItem = /^\d+\.\s+/.test(line);
+
+    if (inList && !isBullet) { html += '</ul>'; inList = false; }
+    if (inNumList && !isNumItem) { inNumList = false; }
+
+    if (!line.trim()) { html += '<div style="height:6px"></div>'; continue; }
+
+    // H1
+    if (/^#\s+/.test(line)) {
+      html += `<div class="er-title">${line.replace(/^#\s+/,'').replace(/\*\*/g,'')}</div>`;
+      continue;
+    }
+
+    // H2
+    if (/^##\s+/.test(line)) {
+      chNum++;
+      const t = line.replace(/^##\s+/,'').replace(/\*\*/g,'');
+      html += `<div class="er-ch"><div class="er-chnum">${chNum}</div>${t}</div><div class="er-divider"></div>`;
+      continue;
+    }
+
+    // H3
+    if (/^###\s+/.test(line)) {
+      html += `<div class="er-h3">${line.replace(/^###\s+/,'').replace(/\*\*/g,'')}</div>`;
+      continue;
+    }
+
+    // Bracket sections [TITRE]
+    if (/^\*\*\[.+\]\*\*/.test(line) || /^\[.+\]/.test(line)) {
+      chNum++;
+      const t = line.replace(/\*\*/g,'').replace(/[\[\]]/g,'').replace(/^[-:]\s*/,'').trim();
+      html += `<div class="er-ch"><div class="er-chnum">◆</div>${t}</div><div class="er-divider"></div>`;
+      continue;
+    }
+
+    // Tips and callouts
+    if (/^💡|^🔑|^📊|^🎯/.test(line.trim())) {
+      html += `<div class="er-tip">${fmtInline(line)}</div>`;
+      continue;
+    }
+    if (/^⚠️|^❗|^🚨/.test(line.trim())) {
+      html += `<div class="er-warn">${fmtInline(line)}</div>`;
+      continue;
+    }
+
+    // Key points
+    if (/^🔑|^✅|^⭐/.test(line.trim())) {
+      const ico = line.match(/^(🔑|✅|⭐)/)[0];
+      const rest = line.replace(/^(🔑|✅|⭐)\s*/, '');
+      html += `<div class="er-kp"><div class="er-kpico">${ico}</div><div class="er-kptxt">${fmtInline(rest)}</div></div>`;
+      continue;
+    }
+
+    // Bullet list
+    if (isBullet) {
+      if (!inList) { html += '<ul class="er-ul">'; inList = true; }
+      html += `<li>${fmtInline(line.replace(/^[-•]\s+/,''))}</li>`;
+      continue;
+    }
+
+    // Numbered list
+    if (isNumItem) {
+      const num = line.match(/^(\d+)\./)[1];
+      const rest = line.replace(/^\d+\.\s+/,'');
+      html += `<div class="er-num-li"><div class="er-num">${num}</div><div style="font-size:13.5px;color:#C8D0F0;line-height:1.75;padding-top:3px">${fmtInline(rest)}</div></div>`;
+      continue;
+    }
+
+    // Default paragraph
+    const formatted = fmtInline(line);
+    if (formatted.trim()) html += `<div class="er-p">${formatted}</div>`;
+  }
+
+  if (inList) html += '</ul>';
+  return html + `<div class="er-end"><div class="er-end-title">✨ Fin de l'Ebook</div><div style="font-size:13px;color:var(--mid)">Généré par EbookForge AI • Powered by Claude</div></div>`;
+}
+
+function fmtInline(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code style="font-family:\'JetBrains Mono\',monospace;font-size:11.5px;background:rgba(123,104,238,.12);color:var(--a3);padding:1px 6px;border-radius:4px">$1</code>');
+}
+
+// ══════════════════════════════════════════
+// DOWNLOAD — TXT
+// ══════════════════════════════════════════
+function downloadTxt(id) {
+  const entry = library.find(e => e.id === id);
+  if (!entry) return;
+  const fileName = entry.title.replace(/[^a-zA-ZÀ-ÿ0-9\s]/g,'').replace(/\s+/g,'_').slice(0,60);
+  const header = `╔══════════════════════════════════════════╗
+║  ${entry.title.slice(0,42).padEnd(42)} ║
+╚══════════════════════════════════════════╝
+
+Niche : ${entry.niche}
+Public : ${entry.aud}
+Langue : ${entry.lang}
+Chapitres : ${entry.chapters}
+Mots : ${(entry.words||0).toLocaleString()}
+Généré le : ${entry.createdAt}
+Généré par : EbookForge AI — Powered by Claude
+
+${'═'.repeat(50)}\n\n`;
+
+  const blob = new Blob(['\uFEFF' + header + entry.content], { type:'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName + '.txt';
+  a.click();
+  toast('✅ TXT téléchargé !');
+}
+
+// ══════════════════════════════════════════
+// DOWNLOAD — PDF (via print)
+// ══════════════════════════════════════════
+function downloadPDF(id) {
+  const entry = library.find(e => e.id === id);
+  if (!entry) return;
+
+  const formatted = formatEbook(entry.content);
+  const pdfWin = window.open('', '_blank');
+  pdfWin.document.write(`<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<title>${entry.title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  @page{size:A4;margin:20mm 18mm 20mm 18mm;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;font-size:11.5pt;line-height:1.75;color:#1A1A2E;background:#fff;}
+  .cover{page-break-after:always;text-align:center;padding:60px 20px;border-bottom:2px solid #7B68EE;}
+  .cover-title{font-family:'Playfair Display',serif;font-size:32pt;font-weight:900;color:#1A1A2E;margin-bottom:14px;line-height:1.15;}
+  .cover-meta{font-size:11pt;color:#666;margin-top:10px;}
+  .cover-badge{display:inline-block;padding:6px 16px;border-radius:20px;background:#7B68EE;color:#fff;font-size:10pt;font-weight:700;margin:14px 0;}
+  .er-title{font-family:'Playfair Display',serif;font-size:26pt;font-weight:900;color:#1A1A2E;margin:24px 0 10px;line-height:1.15;border-bottom:2.5px solid #7B68EE;padding-bottom:10px;}
+  .er-ch{font-family:'Playfair Display',serif;font-size:17pt;font-weight:700;color:#7B68EE;margin:22px 0 10px;display:flex;align-items:center;gap:10px;}
+  .er-chnum{width:28px;height:28px;border-radius:7px;background:#EEE8FF;display:inline-flex;align-items:center;justify-content:center;font-size:11pt;font-weight:900;color:#7B68EE;flex-shrink:0;}
+  .er-h3{font-size:13pt;font-weight:800;color:#1A1A2E;margin:14px 0 6px;}
+  .er-p{font-size:11pt;line-height:1.8;color:#2A2A3E;margin-bottom:9px;}
+  .er-ul{list-style:none;padding:0;margin-bottom:12px;}
+  .er-ul li{padding:6px 10px 6px 22px;position:relative;border-radius:5px;background:#F8F7FF;margin-bottom:4px;font-size:11pt;}
+  .er-ul li::before{content:'▸';position:absolute;left:7px;color:#7B68EE;font-size:9pt;top:7px;}
+  .er-tip{padding:10px 14px;border-left:3px solid #00D9AA;background:#F0FBF8;border-radius:0 6px 6px 0;font-size:11pt;color:#00876A;margin:10px 0;font-style:italic;}
+  .er-warn{padding:10px 14px;border-left:3px solid #FFB347;background:#FFF8F0;border-radius:0 6px 6px 0;font-size:11pt;color:#C07000;margin:10px 0;}
+  .er-kp{display:flex;gap:9px;padding:10px 12px;background:#EEE8FF;border-radius:8px;margin-bottom:7px;}
+  .er-kpico{font-size:15pt;flex-shrink:0;}
+  .er-kptxt{font-size:11pt;color:#1A1A2E;line-height:1.65;}
+  .er-num-li{display:flex;gap:10px;margin-bottom:8px;}
+  .er-num{width:22px;height:22px;border-radius:5px;background:#EEE8FF;display:inline-flex;align-items:center;justify-content:center;font-size:10pt;font-weight:900;color:#7B68EE;flex-shrink:0;margin-top:2px;}
+  .er-divider{height:1.5px;background:linear-gradient(90deg,#7B68EE,#FF6B9D,transparent);margin:10px 0 14px;border-radius:2px;}
+  .er-end{text-align:center;padding:24px;border-top:1.5px solid #EEE8FF;margin-top:20px;}
+  .er-end-title{font-family:'Playfair Display',serif;font-size:18pt;font-weight:700;color:#7B68EE;margin-bottom:7px;}
+  @media print{
+    .no-print{display:none!important;}
+    .er-ch{page-break-before:auto;}
+  }
+</style>
+</head><body>
+  <div class="cover">
+    <div style="font-size:12pt;color:#7B68EE;font-weight:700;margin-bottom:14px;letter-spacing:1px;text-transform:uppercase">📚 EbookForge AI — Produit Digital Premium</div>
+    <div class="cover-title">${entry.title}</div>
+    <div class="cover-badge">Généré par Claude AI</div>
+    <div class="cover-meta">
+      Niche : ${entry.niche}<br>
+      Public cible : ${entry.aud}<br>
+      ${(entry.words||0).toLocaleString()} mots • ${entry.chapters} chapitres<br>
+      Généré le ${entry.createdAt}
+    </div>
+  </div>
+  <div style="padding:0 4px">${formatted}</div>
+</body></html>`);
+  pdfWin.document.close();
+  setTimeout(() => { pdfWin.focus(); pdfWin.print(); }, 1200);
+  toast('📄 Fenêtre PDF ouverte — Sauvegardez en PDF');
+}
+
+// ══════════════════════════════════════════
+// COPY
+// ══════════════════════════════════════════
+function copyText(id) {
+  const entry = library.find(e => e.id === id);
+  if (!entry) return;
+  navigator.clipboard.writeText(entry.content).then(() => toast('✅ Copié dans le presse-papier !'));
+}
+
+// ══════════════════════════════════════════
+// LIBRARY
+// ══════════════════════════════════════════
+function updateLibBadge() {
+  document.getElementById('libBadge').textContent = library.length;
+}
+
+function renderLibrary() {
+  const grid = document.getElementById('libGrid');
+  const empty = document.getElementById('libEmpty');
+  if (!library.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = library.map(e => `
+    <div class="lc">
+      <div class="lc-cover" style="background:${e.color||'linear-gradient(135deg,#0D0F1C,#181C38)'}">${e.emoji}</div>
+      <div class="lc-body">
+        <div class="lc-title">${e.title}</div>
+        <div class="lc-meta">${e.niche} • ${e.createdAt}</div>
+        <div class="lc-tags">
+          <span class="lctag">${e.lang}</span>
+          <span class="lctag">${(e.words||0).toLocaleString()} mots</span>
+          <span class="lctag">${e.chapters} ch.</span>
+        </div>
+        <div class="lc-acts">
+          <button class="tbtn tp3" style="font-size:11px;padding:5px 9px" onclick="viewLib(${e.id})">👁</button>
+          <button class="tbtn tp3" style="font-size:11px;padding:5px 9px" onclick="downloadTxt(${e.id})">TXT</button>
+          <button class="tbtn tp1" style="font-size:11px;padding:5px 9px" onclick="downloadPDF(${e.id})">PDF</button>
+          <button class="tbtn tp2" style="font-size:11px;padding:5px 9px" onclick="delLib(${e.id})">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function viewLib(id) {
+  const entry = library.find(e => e.id === id);
+  if (!entry) return;
+  show('gen');
+  document.getElementById('progArea').style.display = 'none';
+  renderResult(entry);
+  document.getElementById('resultArea').scrollIntoView({ behavior:'smooth' });
+}
+
+function delLib(id) {
+  if (!confirm('Supprimer cet ebook de la bibliothèque ?')) return;
+  library = library.filter(e => e.id !== id);
+  localStorage.setItem('ef_lib', JSON.stringify(library));
+  updateLibBadge(); renderLibrary();
+  toast('🗑 Ebook supprimé');
+}
+
+// ══════════════════════════════════════════
+// TRENDING
+// ══════════════════════════════════════════
+const TRENDING = [
+  [1,'L\'IA pour Gagner de l\'Argent','ChatGPT, automatisation, revenus','🔥🔥🔥','Intelligence Artificielle & ChatGPT','rgba(255,107,157,.15)','#FF6B9D'],
+  [2,'Liberté Financière à 30 Ans','FIRE Movement, investissement','🔥🔥🔥','Finance & Investissement','rgba(255,179,71,.12)','#FFB347'],
+  [3,'Créer sa Boutique en Ligne','Dropshipping, Shopify, print-on-demand','🔥🔥🔥','Business & Entrepreneuriat','rgba(123,104,238,.15)','#7B68EE'],
+  [4,'Maîtriser ChatGPT & les Prompts','500 prompts pour productivité','🔥🔥🔥','Intelligence Artificielle & ChatGPT','rgba(56,189,248,.12)','#38BDF8'],
+  [5,'Perdre 10 kg en 90 Jours','Nutrition, sport, habitudes','🔥🔥','Santé & Bien-être','rgba(0,217,170,.12)','#00D9AA'],
+  [6,'Devenir Riche avec les Dividendes','Actions, REITs, revenus passifs','🔥🔥🔥','Finance & Investissement','rgba(255,179,71,.12)','#FFB347'],
+  [7,'Guide Freelance 6 Chiffres','Clients, tarifs, automatisation','🔥🔥','Freelance & Revenus en Ligne','rgba(255,107,157,.12)','#FF6B9D'],
+  [8,'Crypto pour Débutants 2025','Bitcoin, Ethereum, DeFi','🔥🔥','Crypto & Web3 & NFT','rgba(255,179,71,.1)','#FFB347'],
+  [9,'Habitudes Millionnaires','Routine matinale, mindset riche','🔥🔥','Développement Personnel & Leadership','rgba(123,104,238,.12)','#7B68EE'],
+  [10,'TikTok & Instagram pour Vendre','Contenu viral, monétisation','🔥🔥🔥','Marketing Digital & Réseaux Sociaux','rgba(255,107,157,.12)','#FF6B9D'],
+  [11,'Créer & Vendre des Ebooks','1 000$/mois en produits digitaux','🔥🔥🔥','Business & Entrepreneuriat','rgba(0,217,170,.1)','#00D9AA'],
+  [12,'Business Plan Parfait Afrique','Startup en Bénin, Côte d\'Ivoire','🔥🔥','Business & Entrepreneuriat','rgba(123,104,238,.1)','#7B68EE'],
+  [13,'SEO & Google en 2025','Référencer et vendre avec contenu','🔥🔥','Marketing Digital & Réseaux Sociaux','rgba(56,189,248,.1)','#38BDF8'],
+  [14,'La Bible des Prières Puissantes','Délivrance, guérison, prospérité','🔥🔥','Spiritualité & Religion','rgba(255,179,71,.1)','#FFB347'],
+  [15,'Élever des Enfants Brillants','Éducation positive, réussite','🔥','Parentalité & Éducation des Enfants','rgba(0,217,170,.08)','#00D9AA'],
+  [16,'100 Recettes Africaines Premium','Cuisine béninoise, togolaise...','🔥🔥','Cuisine & Recettes','rgba(255,179,71,.1)','#FFB347'],
+  [17,'Productivité Extrême','GTD, deep work, flow state','🔥','Productivité & Organisation','rgba(123,104,238,.1)','#7B68EE'],
+  [18,'Business avec l\'IA 2025','IA + entrepreneuriat : le duo gagnant','🔥🔥🔥','Intelligence Artificielle & ChatGPT','rgba(255,107,157,.1)','#FF6B9D'],
+  [19,'Investir dans l\'Immobilier Africain','Bénin, Côte d\'Ivoire, Sénégal','🔥🔥','Finance & Investissement','rgba(255,179,71,.1)','#FFB347'],
+  [20,'Mental d\'Acier','Résilience, leadership, excellence','🔥','Développement Personnel & Leadership','rgba(0,217,170,.08)','#00D9AA'],
+];
+
+function renderTrending() {
+  document.getElementById('trendList').innerHTML = TRENDING.map(t => `
+    <div class="tri" onclick="useTrend('${t[1].replace(/'/g,"\\'")}','${t[4].replace(/'/g,"\\'")}')">
+      <div class="trrank" style="background:${t[5]};color:${t[6]};font-weight:900">${t[0]}</div>
+      <div class="trinfo">
+        <div class="trtitle">${t[1]}</div>
+        <div class="trsub">${t[2]} • <em style="color:${t[6]}">${t[4]}</em></div>
+      </div>
+      <div class="trheat" style="background:${t[5]};color:${t[6]}">${t[3]}</div>
+    </div>`).join('');
+}
+
+function useTrend(title, n) {
+  show('gen');
+  document.getElementById('eTitle').value = title;
+  niche = n;
+  document.querySelectorAll('.nc').forEach(c => c.classList.toggle('sel', c.dataset.n === n));
+  setTimeout(() => document.getElementById('genBtn').scrollIntoView({ behavior:'smooth' }), 200);
+}
+
+// ══════════════════════════════════════════
+// FORMULES
+// ══════════════════════════════════════════
+function applyF(key) {
+  show('gen');
+  const map = {
+    bestseller: { tone:'professionnel, autoritaire et expert', depth:'guide complet avec exemples pratiques détaillés et études de cas' },
+    transformation: { tone:'motivant, inspirant et énergique', depth:'masterclass ultra-approfondie avec recherches, données, études de cas réels, témoignages et exercices pratiques step-by-step' },
+    playbook: { tone:'pratique, direct et no-fluff', depth:'bible exhaustive et encyclopédique couvrant chaque aspect en profondeur avec exemples, contre-exemples, nuances et applications pratiques' },
+    secrets: { tone:'professionnel, autoritaire et expert', depth:'guide complet avec exemples pratiques détaillés et études de cas' },
+    guide: { tone:'pédagogique, clair et accessible', depth:'bible exhaustive et encyclopédique couvrant chaque aspect en profondeur avec exemples, contre-exemples, nuances et applications pratiques' },
+    challenge: { tone:'motivant, inspirant et énergique', depth:'masterclass ultra-approfondie avec recherches, données, études de cas réels, témoignages et exercices pratiques step-by-step' },
+  };
+  const cfg = map[key] || {};
+  if (cfg.tone) document.getElementById('eTone').value = cfg.tone;
+  if (cfg.depth) document.getElementById('eDepth').value = cfg.depth;
+  setTimeout(() => document.getElementById('genBtn').scrollIntoView({ behavior:'smooth' }), 200);
+  toast('✅ Formule ' + key + ' appliquée !');
+}
+
+// ══════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════
+async function sendChat() {
+  const apiKey = getApiKey();
+  const input = document.getElementById('chatIn');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendChat('user', msg);
+  chatHistory.push({ role:'user', content:msg });
+
+  const tid = 'ty_' + Date.now();
+  const cm = document.getElementById('chatMsgs');
+  cm.innerHTML += `<div class="msg msg-ai" id="${tid}"><div class="mav">🤖</div><div class="mbub"><div class="tdots"><span></span><span></span><span></span></div></div></div>`;
+  cm.scrollTop = cm.scrollHeight;
+
+  if (!apiKey) {
+    document.getElementById(tid)?.remove();
+    appendChat('ai', '⚠️ **Clé API non configurée.** Allez dans ⚙️ Configuration pour ajouter votre clé API Anthropic.');
+    return;
+  }
+
+  const sys = `Tu es un expert mondial en création et vente d'ebooks et produits digitaux. Tu conseilles en français avec des chiffres concrets, des exemples réels et des conseils actionnables sur : niches rentables, structure ebooks bestsellers, tarification, marketing digital (RS, email, SEO), plateformes de vente (Amazon KDP, Gumroad, Etsy, Selar.co, Gumroad), automatisation IA. Sois direct et pratique.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user',content:sys},...chatHistory.slice(-8)] })
+    });
+    const data = await resp.json();
+    const reply = data.content?.find(b=>b.type==='text')?.text || 'Désolé, erreur.';
+    document.getElementById(tid)?.remove();
+    appendChat('ai', reply);
+    chatHistory.push({ role:'assistant', content:reply });
+  } catch(e) {
+    document.getElementById(tid)?.remove();
+    appendChat('ai', '❌ Erreur de connexion. Vérifiez votre clé API et votre connexion internet.');
+  }
+}
+
+function appendChat(role, text) {
+  const cm = document.getElementById('chatMsgs');
+  const fmt = text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>');
+  cm.innerHTML += `<div class="msg msg-${role}"><div class="mav">${role==='ai'?'🤖':'👤'}</div><div class="mbub">${fmt}</div></div>`;
+  cm.scrollTop = cm.scrollHeight;
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function getNicheEmoji(n) {
+  const m={'Finance':'💰','Intelligence':'🤖','Business':'🚀','Santé':'🏃','Marketing':'📱','Développement':'🌱','Crypto':'₿','Freelance':'💼','Parentalité':'👨‍👩‍👧','Productivité':'⏰','Spiritualité':'✝️','Cuisine':'🍽️'};
+  for(const[k,v]of Object.entries(m))if(n.includes(k))return v;
+  return '📚';
+}
+function getNicheColor(n) {
+  const m={'Finance':'linear-gradient(135deg,#0A2A0A,#1A4A1A)','Intelligence':'linear-gradient(135deg,#0A0A2A,#1A0A3A)','Business':'linear-gradient(135deg,#2A1A0A,#3A2A0A)','Santé':'linear-gradient(135deg,#0A2A1A,#0A3A2A)','Marketing':'linear-gradient(135deg,#2A0A1A,#3A0A2A)','Développement':'linear-gradient(135deg,#0A1A2A,#0A2A3A)','Crypto':'linear-gradient(135deg,#2A2A0A,#3A3A0A)','Freelance':'linear-gradient(135deg,#1A0A2A,#0A1A3A)'};
+  for(const[k,v]of Object.entries(m))if(n.includes(k))return v;
+  return 'linear-gradient(135deg,#0D0F1C,#181C38)';
+}
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
